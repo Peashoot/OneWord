@@ -1,18 +1,339 @@
 <template>
   <div class="home">
-    <img alt="Vue logo" src="../assets/logo.png">
-    <HelloWorld msg="Welcome to Your Vue.js + TypeScript App"/>
+    <div class="scroll-view">
+      <van-nav-bar title="一言" left-text="返回" left-arrow>
+        <template #right>
+          <van-icon name="setting" size="18" @click="toSetting" />
+        </template>
+      </van-nav-bar>
+      <van-pull-refresh v-model="loading" @refresh="refreshWord">
+        <img alt="Vue logo" src="http://www.dmoe.cc/random.php" class="logo" />
+        <van-swipe
+          class="my-swipe"
+          indicator-color="white"
+          ref="wordSwipe"
+          @change="swipeIndexChanged"
+        >
+          <van-swipe-item
+            v-for="(word, index) in words"
+            :key="index"
+            :style="{
+              'background-color': colors[index],
+              'font-size': calcFontSize(word) + 'px',
+            }"
+          >
+            <div class="word-container">
+              <p :class="[{ 'copy-item': selectedIndex == index }, wordClass]">
+                {{ word }}
+              </p>
+            </div>
+            <van-icon
+              class="copy-icon"
+              class-prefix="my-icon"
+              name="copy"
+              @click="copyWords"
+            />
+          </van-swipe-item>
+        </van-swipe>
+      </van-pull-refresh>
+      <van-button class="btn-next-one" type="primary" @click="refreshWord" round
+        >不满意，换一个</van-button
+      >
+    </div>
+    <van-tabbar v-model="active" safe-area-inset-bottom placeholder>
+      <van-tabbar-item icon="comment-o">随心随遇</van-tabbar-item>
+      <van-tabbar-item icon="description">洋墨水</van-tabbar-item>
+      <van-tabbar-item icon="friends-o">社会人</van-tabbar-item>
+      <van-tabbar-item icon="good-job-o">心灵鸡汤</van-tabbar-item>
+      <van-tabbar-item icon="flower-o">彩虹屁</van-tabbar-item>
+      <van-tabbar-item icon="like-o">渣男语录</van-tabbar-item>
+    </van-tabbar>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue } from 'vue-property-decorator';
-import HelloWorld from '@/components/HelloWorld.vue'; // @ is an alias to /src
+import { Component, Vue } from "vue-property-decorator";
+import * as clipboard from "clipboard-polyfill";
+import {
+  Tabbar,
+  TabbarItem,
+  Button,
+  PullRefresh,
+  NavBar,
+  Icon,
+  Swipe,
+  SwipeItem,
+  Dialog,
+  Toast,
+  Row,
+  Col,
+} from "vant";
+import "vant/lib/index.less";
+import { AxiosResponse } from "axios";
 
 @Component({
   components: {
-    HelloWorld,
+    "van-nav-bar": NavBar,
+    "van-tabbar": Tabbar,
+    "van-tabbar-item": TabbarItem,
+    "van-button": Button,
+    "van-pull-refresh": PullRefresh,
+    "van-icon": Icon,
+    "van-swipe": Swipe,
+    "van-swipe-item": SwipeItem,
+    "van-dialog": Dialog.Component,
+    "van-row": Row,
+    "van-col": Col,
   },
 })
-export default class Home extends Vue {}
+export default class Home extends Vue {
+  /**
+   * 已激活的标签页序号
+   */
+  private active = 0;
+  /**
+   * 最大轮播项目
+   */
+  private maxItemCount = 10;
+  /**
+   * 格言
+   */
+  private words = ["这个世界上没有完美的人类，所以，人无法自己一个人活著。"];
+  /**
+   * 轮播项目候选背景颜色
+   */
+  private candidateColors = [
+    "#393ced",
+    "#39a9ed",
+    "#39edb1",
+    "#7bed39",
+    "#c6ed39",
+    "#edc339",
+    "#ed6339",
+    "#ed3975",
+    "#ed39cf",
+    "#ab39ed",
+  ];
+  /**
+   * 轮播项目背景颜色
+   */
+  private colors = ["#393ced"];
+  /**
+   * 下拉刷新状态
+   */
+  private loading = false;
+  /**
+   * 一言api类型数组
+   */
+  private scType = ["hitokoto", "en", "social", "soup", "fart", "zha"];
+  /**
+   * 黑夜模式
+   */
+  private darkMode = false;
+  /**
+   * 启用代理
+   */
+  private proxyEnabled = false;
+  /**
+   * 当前页
+   */
+  private selectedIndex = 0;
+  /**
+   * 已刷新次数
+   */
+  private refreshCount = 0;
+  /**
+   * 使用随机颜色
+   */
+  private randomColor = false;
+  /**
+   * 文本类型
+   */
+  private wordClass = "word-content";
+  /**
+   * 刷新格言
+   */
+  refreshWord() {
+    const type =
+      this.active < this.scType.length
+        ? this.scType[this.active]
+        : this.scType[0];
+    const requrl =
+      "https://api.uixsj.cn/hitokoto/get?type=" + type + "&code=json";
+    this.axios
+      .get(requrl)
+      .then((response: AxiosResponse<WordResp>) => {
+        if (response.status == 200) {
+          // 第一次刷新时把默认格言清空
+          if (this.refreshCount == 0) {
+            this.words = [];
+            this.colors = [];
+          }
+          // 超出一定长度的把最开始的内容舍弃
+          if (this.words.length >= this.maxItemCount) {
+            this.words.splice(0, this.words.length - this.maxItemCount + 1);
+            this.colors.splice(0, this.words.length - this.maxItemCount + 1);
+          }
+          this.words.push(response.data.content);
+          if (this.randomColor) {
+            // 随机颜色
+            this.colors.push(
+              this.candidateColors[
+                Math.floor(Math.random() * this.candidateColors.length)
+              ]
+            );
+          } else {
+            // 按既定顺序使用颜色
+            this.colors.push(
+              this.candidateColors[
+                this.refreshCount % this.candidateColors.length
+              ]
+            );
+          }
+          this.refreshCount++;
+          // 切换到最新的页
+          const swipe = this.$refs.wordSwipe as Swipe;
+          swipe.swipeTo(this.words.length - 1);
+        } else {
+          Dialog.alert({
+            message: "好像出故障了呢QAQ",
+            closeOnClickOverlay: true,
+          });
+        }
+        this.loading = false;
+      })
+      .catch(() => {
+        this.loading = false;
+        Dialog.alert({
+          message: "不要心急，给我点时间缓缓呗",
+          closeOnClickOverlay: true,
+        });
+      });
+  }
+  /**
+   * 能否被复制
+   */
+  swipeIndexChanged(index: number) {
+    this.selectedIndex = index;
+  }
+  /**
+   * 复制格言
+   */
+  copyWords() {
+    console.log("start copy");
+    // 获取需要复制的dom
+    const copyElements = document.getElementsByClassName("copy-item");
+    if (copyElements.length < 1) {
+      return;
+    }
+    const copyItemElement = copyElements[0] as HTMLElement;
+    // 获取dom文本信息
+    const items = [
+      new clipboard.ClipboardItem({
+        "text/plain": this.stringToBlob(
+          "text/plain",
+          copyItemElement.innerText
+        ),
+      }),
+    ];
+    // 写入到剪贴板
+    clipboard.write(items).then(
+      function () {
+        Toast.success("复制成功");
+      },
+      function () {
+        Toast.fail("复制失败，请手动选择复制！");
+      }
+    );
+  }
+  /**
+   * string转成Blob类型
+   */
+  stringToBlob(type: string, str: string) {
+    return new Blob([str], {
+      type: type,
+    });
+  }
+  /**
+   * 计算字体大小
+   */
+  calcFontSize(word: string) {
+    const fontSize = Math.floor(Math.sqrt(30000 / word.length));
+    return fontSize < 20 ? 20 : fontSize;
+  }
+  /**
+   * 跳转到设置
+   */
+  toSetting() {
+    this.$router.push("/setting");
+  }
+  /**
+   * 启动时先查询一遍格言
+   */
+  mounted() {
+    this.refreshWord();
+  }
+}
+
+class WordResp {
+  /**
+   * 返回的状态码
+   */
+  code!: string;
+  /**
+   * 返回当前一言类型
+   */
+  type!: string;
+  /**
+   * 返回一言内容
+   */
+  content!: string;
+}
 </script>
+<style>
+.logo {
+  width: 100%;
+}
+.my-swipe .van-swipe-item {
+  color: #fff;
+  font-size: 20px;
+  height: 300px;
+  text-align: center;
+}
+@font-face {
+  font-family: "my-icon";
+  src: url("../assets/iconfont.ttf") format("truetype");
+}
+
+.my-icon {
+  font-family: "my-icon";
+}
+
+.my-icon-copy::before {
+  content: "\e624";
+}
+
+.my-swipe .van-swipe-item .word-container {
+  position: absolute;
+  top: 0px;
+  width: 100%;
+  height: calc(100% - 40px);
+}
+
+.word-content {
+  padding: 10px;
+  top: 50%;
+  transform: translateY(-65%);
+  position: relative;
+}
+
+.copy-icon {
+  position: absolute;
+  right: 10px;
+  bottom: 10px;
+}
+
+.btn-next-one {
+  top: 30px;
+}
+</style>
