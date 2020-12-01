@@ -7,7 +7,7 @@
         </template>
       </van-nav-bar>
       <van-pull-refresh v-model="loading" @refresh="refreshWord">
-        <img alt="Vue logo" src="http://www.dmoe.cc/random.php" class="logo" />
+        <img alt="Vue logo" src="//api.mtyqx.cn/tapi/random.php" class="logo" />
         <van-swipe
           class="my-swipe"
           indicator-color="white"
@@ -19,10 +19,14 @@
             :key="index"
             :style="{
               'background-color': colors[index],
-              'font-size': calcFontSize(word) + 'px',
             }"
           >
-            <div class="word-container">
+            <div
+              class="word-container"
+              :style="{
+                'font-size': calcFontSize(word) + 'px',
+              }"
+            >
               <p :class="[{ 'copy-item': selectedIndex == index }, wordClass]">
                 {{ word }}
               </p>
@@ -40,6 +44,24 @@
         >不满意，换一个</van-button
       >
     </div>
+
+    <van-action-sheet v-model="showLay" title="设置"
+      ><div class="setting">
+        <p>黑暗模式</p>
+        <van-switch v-model="darkMode" />
+        <p>随机颜色</p>
+        <van-switch v-model="randomColor" />
+        <p>启用代理</p>
+        <van-switch v-model="proxyEnable" />
+        <p>代理地址</p>
+        <van-picker
+          title="选择代理地址"
+          v-if="proxyEnable"
+          :columns="proxys"
+          @change="onChange"
+        />
+      </div>
+    </van-action-sheet>
     <van-tabbar v-model="active" safe-area-inset-bottom placeholder>
       <van-tabbar-item icon="comment-o">随心随遇</van-tabbar-item>
       <van-tabbar-item icon="description">洋墨水</van-tabbar-item>
@@ -67,6 +89,9 @@ import {
   Toast,
   Row,
   Col,
+  ActionSheet,
+  Picker,
+  Switch,
 } from "vant";
 import "vant/lib/index.less";
 import { AxiosResponse } from "axios";
@@ -84,6 +109,9 @@ import { AxiosResponse } from "axios";
     "van-dialog": Dialog.Component,
     "van-row": Row,
     "van-col": Col,
+    "van-action-sheet": ActionSheet,
+    "van-switch": Switch,
+    "van-picker": Picker,
   },
 })
 export default class Home extends Vue {
@@ -151,6 +179,22 @@ export default class Home extends Vue {
    */
   private wordClass = "word-content";
   /**
+   * 代理
+   */
+  private proxy = "";
+  /**
+   * 显示遮罩层
+   */
+  private showLay = false;
+  /**
+   * 启用代理
+   */
+  private proxyEnable = false;
+  /**
+   * 被选代理池
+   */
+  private proxys = new Array<string>();
+  /**
    * 刷新格言
    */
   refreshWord() {
@@ -160,7 +204,20 @@ export default class Home extends Vue {
         : this.scType[0];
     const requrl =
       "https://api.uixsj.cn/hitokoto/get?type=" + type + "&code=json";
-    this.axios
+    let axiosInstance = this.axios.create();
+    if (this.proxy != "" && this.proxyEnable) {
+      const proxyHost = this.proxy.substr(0, this.proxy.indexOf(":"));
+      const proxyPort = parseInt(
+        this.proxy.substr(this.proxy.indexOf(":") + 1)
+      );
+      axiosInstance = this.axios.create({
+        proxy: {
+          host: proxyHost,
+          port: proxyPort,
+        },
+      });
+    }
+    axiosInstance
       .get(requrl)
       .then((response: AxiosResponse<WordResp>) => {
         if (response.status == 200) {
@@ -258,20 +315,61 @@ export default class Home extends Vue {
    * 计算字体大小
    */
   calcFontSize(word: string) {
-    const fontSize = Math.floor(Math.sqrt(30000 / word.length));
+    const fontSize = Math.floor(Math.sqrt(40000 / word.length));
     return fontSize < 20 ? 20 : fontSize;
   }
   /**
    * 跳转到设置
    */
   toSetting() {
-    this.$router.push("/setting");
+    this.showLay = true;
   }
   /**
    * 启动时先查询一遍格言
    */
   mounted() {
     this.refreshWord();
+  }
+  /**
+   * 利用Timeout异步加载代理池
+   */
+  loadProxys() {
+    setTimeout(this.loadProxyAsync, 100);
+  }
+  /**
+   * 同步加载代理池
+   */
+  async loadProxyAsync() {
+    this.proxys = [];
+    const ipPattern = /<td data-title="IP">(\d{1,3}\.\d{1,3}\.\d{1,3}\.\d{1,3})<\/td>/g;
+    const portPattern = /<td data-title="PORT">(\d{1,5})<\/td>/g;
+    // 同步查询代理列表
+    await this.axios
+      .get("/getproxy/free/inha/1")
+      .then((response: AxiosResponse<string>) => {
+        const alwaysTrue = true;
+        while (alwaysTrue) {
+          const ipMatch = ipPattern.exec(response.data) ?? [];
+          const portMatch = portPattern.exec(response.data) ?? [];
+          if (ipPattern.lastIndex > 0 && portPattern.lastIndex > 0) {
+            this.proxys.push(ipMatch[1] + ":" + portMatch[1]);
+          } else {
+            break;
+          }
+        }
+      });
+  }
+  /**
+   * 页面创建时查询代理
+   */
+  created() {
+    this.loadProxys();
+  }
+  /**
+   * 当代理地址改变后，对属性进行复制
+   */
+  onChange(picker: Picker, values: string) {
+    this.proxy = values;
   }
 }
 
@@ -297,7 +395,7 @@ class WordResp {
 .my-swipe .van-swipe-item {
   color: #fff;
   font-size: 20px;
-  height: 300px;
+  height: 250px;
   text-align: center;
 }
 @font-face {
@@ -314,17 +412,15 @@ class WordResp {
 }
 
 .my-swipe .van-swipe-item .word-container {
-  position: absolute;
-  top: 0px;
   width: 100%;
-  height: calc(100% - 40px);
+  height: 100%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
 .word-content {
   padding: 10px;
-  top: 50%;
-  transform: translateY(-65%);
-  position: relative;
 }
 
 .copy-icon {
@@ -334,6 +430,6 @@ class WordResp {
 }
 
 .btn-next-one {
-  top: 30px;
+  top: 15px;
 }
 </style>
