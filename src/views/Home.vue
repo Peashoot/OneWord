@@ -1,9 +1,14 @@
 <template>
   <div class="home">
     <div class="scroll-view">
-      <van-nav-bar title="一言" left-text="返回" left-arrow>
+      <van-nav-bar
+        title="一言🌟不合"
+        left-text="去主页"
+        left-arrow
+        @click-left="toHomePage"
+      >
         <template #right>
-          <van-icon name="setting" size="18" @click="toSetting" />
+          <van-icon name="setting" size="20" @click="toSetting" />
         </template>
       </van-nav-bar>
       <van-pull-refresh v-model="loading" @refresh="refreshWord">
@@ -43,6 +48,7 @@
       <van-button class="btn-next-one" type="primary" @click="refreshWord" round
         >不满意，换一个</van-button
       >
+      <div class="place-holder"></div>
     </div>
 
     <van-action-sheet v-model="showLay" title="设置"
@@ -234,11 +240,7 @@ export default class Home extends Vue {
           this.words.push(response.data.content);
           if (this.randomColor) {
             // 随机颜色
-            this.colors.push(
-              this.candidateColors[
-                Math.floor(Math.random() * this.candidateColors.length)
-              ]
-            );
+            this.colors.push(this.lightColorGen(50));
           } else {
             // 按既定顺序使用颜色
             this.colors.push(
@@ -371,6 +373,24 @@ export default class Home extends Vue {
   onChange(picker: Picker, values: string) {
     this.proxy = values;
   }
+  /**
+   * 随机生成亮色
+   */
+  lightColorGen(minLight: number) {
+    const mH = 360;
+    const mS = 100;
+    const mL = 80 - minLight;
+    const H = ~~(mH * Math.random());
+    const S = ~~(mS * Math.random());
+    const L = minLight + ~~(mL * Math.random());
+    return `HSL(${H},${S}%,${L}%)`;
+  }
+  /**
+   * 跳转到主页
+   */
+  toHomePage() {
+    window.location.href = "//www.peashoot.xyz";
+  }
 }
 
 class WordResp {
@@ -391,6 +411,7 @@ class WordResp {
 <style>
 .logo {
   width: 100%;
+  margin: 0;
 }
 .my-swipe .van-swipe-item {
   color: #fff;
@@ -431,5 +452,8 @@ class WordResp {
 
 .btn-next-one {
   top: 15px;
+}
+div .place-holder {
+  height: 20px;
 }
 </style>

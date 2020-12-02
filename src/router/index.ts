@@ -8,7 +8,10 @@ const routes: Array<RouteConfig> = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: Home,
+    meta: {
+      title: '一言不合'
+    }
   },
   {
     path: '/about',
