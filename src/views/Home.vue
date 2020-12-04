@@ -12,7 +12,14 @@
         </template>
       </van-nav-bar>
       <van-pull-refresh v-model="loading" @refresh="refreshWord">
-        <img alt="Vue logo" src="//api.mtyqx.cn/tapi/random.php" class="logo" />
+        <van-image
+          alt="愿得一人心"
+          :src="imgUrl"
+          class="logo"
+          @click="imageRefresh"
+          ><template v-slot:loading>
+            <van-loading type="spinner" size="20" /> </template
+        ></van-image>
         <van-swipe
           class="my-swipe"
           indicator-color="white"
@@ -59,12 +66,12 @@
         <van-switch v-model="randomColor" />
         <p>启用代理</p>
         <van-switch v-model="proxyEnable" />
-        <p>代理地址</p>
+        <p v-if="proxyEnable">选择代理地址</p>
         <van-picker
-          title="选择代理地址"
           v-if="proxyEnable"
           :columns="proxys"
           @change="onChange"
+          visible-item-count="5"
         />
       </div>
     </van-action-sheet>
@@ -98,6 +105,8 @@ import {
   ActionSheet,
   Picker,
   Switch,
+  Image,
+  Loading,
 } from "vant";
 import "vant/lib/index.less";
 import { AxiosResponse } from "axios";
@@ -118,6 +127,8 @@ import { AxiosResponse } from "axios";
     "van-action-sheet": ActionSheet,
     "van-switch": Switch,
     "van-picker": Picker,
+    "van-image": Image,
+    "van-loading": Loading,
   },
 })
 export default class Home extends Vue {
@@ -200,6 +211,14 @@ export default class Home extends Vue {
    * 被选代理池
    */
   private proxys = new Array<string>();
+  /**
+   * 原始图片url
+   */
+  private oriImgUrl = "//api.mtyqx.cn/tapi/random.php";
+  /**
+   * 当前图片url
+   */
+  private imgUrl = this.oriImgUrl;
   /**
    * 刷新格言
    */
@@ -317,8 +336,8 @@ export default class Home extends Vue {
    * 计算字体大小
    */
   calcFontSize(word: string) {
-    const fontSize = Math.floor(Math.sqrt(128 / word.length));
-    return fontSize < 1.5 ? 1.5 : fontSize;
+    const fontSize = Math.floor(Math.sqrt(40000 / word.length)) / 16;
+    return fontSize < 1 ? 11 : fontSize;
   }
   /**
    * 跳转到设置
@@ -391,8 +410,16 @@ export default class Home extends Vue {
   toHomePage() {
     window.location.href = "//www.peashoot.xyz";
   }
+  /**
+   * 刷新图片
+   */
+  imageRefresh() {
+    this.imgUrl = this.oriImgUrl + "?random=" + ~~(Math.random() * 1000);
+  }
 }
-
+/**
+ * api返回类型
+ */
 class WordResp {
   /**
    * 返回的状态码
@@ -420,12 +447,12 @@ class WordResp {
   text-align: center;
 }
 @font-face {
-  font-family: "my-icon";
-  src: url("../assets/iconfont.ttf") format("truetype");
+  font-family: "my-icon-copy";
+  src: url("../assets/copy.ttf") format("truetype");
 }
 
 .my-icon {
-  font-family: "my-icon";
+  font-family: "my-icon-copy";
 }
 
 .my-icon-copy::before {
