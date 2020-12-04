@@ -29,7 +29,7 @@
             <div
               class="word-container"
               :style="{
-                'font-size': calcFontSize(word) + 'px',
+                'font-size': calcFontSize(word) + 'rem',
               }"
             >
               <p :class="[{ 'copy-item': selectedIndex == index }, wordClass]">
@@ -317,8 +317,8 @@ export default class Home extends Vue {
    * 计算字体大小
    */
   calcFontSize(word: string) {
-    const fontSize = Math.floor(Math.sqrt(40000 / word.length));
-    return fontSize < 20 ? 20 : fontSize;
+    const fontSize = Math.floor(Math.sqrt(128 / word.length));
+    return fontSize < 1.5 ? 1.5 : fontSize;
   }
   /**
    * 跳转到设置
@@ -454,6 +454,6 @@ class WordResp {
   top: 15px;
 }
 div .place-holder {
-  height: 20px;
+  height: 3.125rem;
 }
 </style>
