@@ -23,7 +23,15 @@
         ><span>{{ item.name }}</span>
       </button>
     </div> -->
-    <div class="my-swipe">
+    <div
+      class="my-swipe"
+      @touchstart="touchStart($event)"
+      @touchmove="touchMove($event)"
+      @touchend="touchEnd($event)"
+      @mousedown="mouseDown($event)"
+      @mouseup="mouseUp($event)"
+      @mousemove="mouseMove($event)"
+    >
       <div
         class="my-swipe-item"
         v-for="(item, swipeIndex) in swipeItems"
@@ -94,55 +102,137 @@ export default class Home extends Vue {
   toHomePage() {
     window.location.href = "//www.peashoot.xyz";
   }
-
+  /**
+   * 滑向左边
+   */
   swipeToLeft() {
-    if (this.swipeItems.length < 2) {return;}
-    const distance = "-30px";
+    if (this.swipeItems.length < 2) {
+      return;
+    }
     const swipeItems = document.getElementsByClassName("my-swipe-item");
     const curItem = swipeItems[this.curIndex] as HTMLElement;
     const rightItem = (this.curIndex + 1 < this.swipeItems.length
       ? swipeItems[this.curIndex + 1]
       : swipeItems[0]) as HTMLElement;
+
     const swipeContainer = curItem.parentNode as Node;
     // 结束后把当前元素排到最后面
     swipeContainer.appendChild(curItem.cloneNode(true));
-    if (swipeContainer.childNodes.length > this.swipeItems.length + 1) {
+    if (swipeContainer.childNodes.length > this.swipeItems.length) {
       swipeContainer.removeChild(swipeItems[0]);
     } else {
       this.curIndex += 1;
     }
   }
+  /**
+   * 滑向右边
+   */
   swipeToRight() {
-    if (this.swipeItems.length < 2) {return;}
-    const distance = "-30px";
+    if (this.swipeItems.length < 2) {
+      return;
+    }
     const swipeItems = document.getElementsByClassName("my-swipe-item");
     const curItem = swipeItems[this.curIndex] as HTMLElement;
     const leftItem = (this.curIndex == 0
-      ? swipeItems[swipeItems.length - 1].cloneNode(true)
+      ? swipeItems[this.swipeItems.length - 1].cloneNode(true)
       : swipeItems[this.curIndex - 1]) as HTMLElement;
     const swipeContainer = curItem.parentNode as Node;
-    if (swipeContainer.childNodes.length > this.swipeItems.length + 1) {
-      swipeContainer.removeChild(swipeItems[swipeItems.length - 1]);
-    }
     // 第一次移动时把最后一个元素复制一遍到最前面
     if (this.curIndex == 0) {
       swipeContainer.insertBefore(leftItem, curItem);
     } else {
       this.curIndex -= 1;
     }
+    if (swipeContainer.childNodes.length > this.swipeItems.length) {
+      swipeContainer.removeChild(swipeItems[swipeItems.length - 1]);
+    }
+  }
+  /**
+   * 移动起始x轴
+   */
+  startX = 0;
+  /**
+   * 拖拽中
+   */
+  isDrag = false;
+  /**
+   * 滑动
+   */
+  touchMove(event: TouchEvent) {
+    const moveX = event.changedTouches[0].screenX - this.startX;
+    console.log("Move: x " + moveX);
+  }
+  /**
+   * 开始滑动
+   */
+  touchStart(event: TouchEvent) {
+    this.startX = event.touches[0].screenX;
+  }
+  /**
+   * 结束滑动
+   */
+  touchEnd(event: TouchEvent) {
+    const moveX = event.changedTouches[0].screenX - this.startX;
+    console.log("Move End: x " + moveX);
+  }
+  /**
+   * 鼠标按下
+   */
+  mouseDown(event: MouseEvent) {
+    this.isDrag = true;
+    this.startX = event.screenX;
+  }
+  /**
+   * 鼠标移动
+   */
+  mouseMove(event: MouseEvent) {
+    if (!this.isDrag) {
+      return;
+    }
+    const moveX = event.screenX - this.startX;
+    console.log("Move: x " + moveX);
+  }
+  /**
+   * 鼠标抬起
+   */
+  mouseUp(event: any) {
+    this.isDrag = false;
+    const moveX = event.screenX - this.startX;
+    console.log("Move End: x " + moveX);
   }
 }
 
 interface MenuItem {
+  /**
+   * 图标
+   */
   icon?: string;
+  /**
+   * 背景图片
+   */
   backImage?: string;
+  /**
+   * 名称
+   */
   name?: string;
+  /**
+   * 链接
+   */
   link?: string;
 }
 
 interface TabbarItem {
+  /**
+   * 图标
+   */
   icon?: string;
+  /**
+   * 名称
+   */
   name?: string;
+  /**
+   * 链接
+   */
   link?: string;
 }
 </script>
@@ -227,12 +317,19 @@ interface TabbarItem {
 }
 .my-swipe {
   white-space: nowrap;
-  /* overflow: hidden; */
+  overflow: hidden;
 }
 .my-swipe-item {
   display: inline-block;
   width: 100%;
   height: 15rem;
+  /* 禁止选中文本 */
+  -moz-user-select: none; /*火狐*/
+  -webkit-user-select: none; /*webkit浏览器*/
+  -ms-user-select: none; /*IE10*/
+  -khtml-user-select: none; /*早期浏览器*/
+  -webkit-touch-callout: none;
+  user-select: none;
 }
 @font-face {
   font-family: "my-icon-setting";
