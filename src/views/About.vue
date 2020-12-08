@@ -23,29 +23,60 @@
         ><span>{{ item.name }}</span>
       </button>
     </div> -->
-    <div
-      class="my-swipe"
-      @touchstart="touchStart($event)"
-      @touchmove="touchMove($event)"
-      @touchend="touchEnd($event)"
-      @mousedown="mouseDown($event)"
-      @mouseup="mouseUp($event)"
-      @mousemove="mouseMove($event)"
-    >
+    <div class="my-swipe-container">
       <div
-        class="my-swipe-item"
-        v-for="(item, swipeIndex) in swipeItems"
-        :key="swipeIndex"
-        :style="{
-          'background-color': lightColorGen(50),
-        }"
+        class="my-swipe"
+        @touchstart="touchStart($event)"
+        @touchmove="touchMove($event)"
+        @touchend="touchEnd($event)"
+        @mousedown="mouseDown($event)"
+        @mouseup="mouseUp($event)"
+        @mousemove="mouseMove($event)"
       >
-        {{ item }}
+        <div
+          class="my-swipe-item"
+          v-for="(item, swipeIndex) in swipeItems"
+          :key="swipeIndex"
+          :style="{
+            'background-color': lightColorGen(50),
+          }"
+        >
+          {{ item }}
+        </div>
+      </div>
+      <div class="my-swipe-indicator">
+        <div
+          v-for="(item, index) in swipeItems"
+          :key="index"
+          :class="[
+            { 'my-swipe-indicator-marker-selected': curIndex == index },
+            'my-swipe-indicator-marker',
+          ]"
+        ></div>
       </div>
     </div>
-
-    <button @click="swipeToLeft">滑向左边</button
-    ><button @click="swipeToRight">滑向右边</button>
+    <button class="my-round-button">不满意，换一个</button>
+    <div class="my-switch-container">
+      <button
+        :class="[
+          isRandomColor
+            ? 'my-switch-bottom-checked'
+            : 'my-switch-bottom-unchecked',
+          'my-switch-bottom',
+        ]"
+        @click="isRandomColor = !isRandomColor"
+      >
+        <button
+          :class="[
+            isRandomColor ? 'my-switch-top-checked' : 'my-switch-top-unchecked',
+            'my-switch-top',
+          ]"
+          ref="mySwitchTop"
+          style="left: -20px"
+        ></button>
+      </button>
+    </div>
+    <div class="my-cover" v-show="showColor"></div>
     <div class="my-tabbar my-tabbar-height">
       <button
         class="my-tabbar-item"
@@ -70,6 +101,8 @@ export default class Home extends Vue {
   tabbarItems = new Array<TabbarItem>();
   swipeItems = new Array<string>();
   curIndex = 0;
+  isRandomColor = false;
+  showColor = true;
   mounted() {
     for (let i = 1; i <= 5; i++) {
       this.menuItems.push({ name: "按钮" + i });
@@ -83,11 +116,15 @@ export default class Home extends Vue {
     this.tabbarItems.push({ icon: "😁", name: "心灵鸡汤", link: "/xljt" });
     this.tabbarItems.push({ icon: "😉", name: "彩虹屁", link: "/chp" });
     this.tabbarItems.push({ icon: "😜", name: "渣男语录", link: "/znyl" });
+    this.isMobile =
+      navigator.userAgent.match(
+        /(phone|pad|pod|iPhone|iPod|ios|iPad|Android|Mobile|BlackBerry|IEMobile|MQQBrowser|JUC|Fennec|wOSBrowser|BrowserNG|WebOS|Symbian|Windows Phone)/i
+      ) != null;
   }
   /**
    * 随机生成亮色
    */
-  lightColorGen(minLight: number) {
+  lightColorGen(minLight: number): string {
     const mH = 360;
     const mS = 100;
     const mL = 80 - minLight;
@@ -103,50 +140,151 @@ export default class Home extends Vue {
     window.location.href = "//www.peashoot.xyz";
   }
   /**
-   * 滑向左边
+   * 开始滑动时
    */
-  swipeToLeft() {
+  beginSwipe() {
     if (this.swipeItems.length < 2) {
       return;
     }
     const swipeItems = document.getElementsByClassName("my-swipe-item");
-    const curItem = swipeItems[this.curIndex] as HTMLElement;
-    const rightItem = (this.curIndex + 1 < this.swipeItems.length
-      ? swipeItems[this.curIndex + 1]
-      : swipeItems[0]) as HTMLElement;
-
+    const curItem = swipeItems[0] as HTMLElement;
+    const leftItem = swipeItems[this.swipeItems.length - 1].cloneNode(
+      true
+    ) as HTMLElement;
     const swipeContainer = curItem.parentNode as Node;
-    // 结束后把当前元素排到最后面
-    swipeContainer.appendChild(curItem.cloneNode(true));
-    if (swipeContainer.childNodes.length > this.swipeItems.length) {
-      swipeContainer.removeChild(swipeItems[0]);
+    // 第一次移动时把最后一个元素复制一遍到最前面
+    swipeContainer.insertBefore(leftItem, curItem);
+    (swipeContainer as HTMLElement).style.transform =
+      "translateX(" + -window.innerWidth + "px)";
+  }
+  /**
+   * 超过该宽度时自动切换，否则重置
+   */
+  rate = 0.3;
+  /**
+   * 结束滑动
+   */
+  endSwipe(xdiff: number) {
+    if (this.swipeItems.length < 2) {
+      return;
+    }
+    if (xdiff == 0) {
+      this.resetSwipe();
+      return;
+    }
+    this.isAutoMove = true;
+    if (this.rate * window.innerWidth < Math.abs(xdiff)) {
+      const moveX =
+        (window.innerWidth - Math.abs(xdiff)) * (xdiff > 0 ? 1 : -1);
+      this.autoMove(moveX, this.afterSwipe);
     } else {
-      this.curIndex += 1;
+      const moveX = 0 - xdiff;
+      this.autoMove(moveX, this.resetSwipe);
     }
   }
   /**
-   * 滑向右边
+   * 滑动后复位
    */
-  swipeToRight() {
-    if (this.swipeItems.length < 2) {
-      return;
-    }
+  resetSwipe() {
     const swipeItems = document.getElementsByClassName("my-swipe-item");
-    const curItem = swipeItems[this.curIndex] as HTMLElement;
-    const leftItem = (this.curIndex == 0
-      ? swipeItems[this.swipeItems.length - 1].cloneNode(true)
-      : swipeItems[this.curIndex - 1]) as HTMLElement;
+    const leftItem = swipeItems[0] as HTMLElement;
+    const swipeContainer = leftItem.parentNode as Node;
+    swipeContainer.removeChild(leftItem);
+    (swipeContainer as HTMLElement).style.transform = "translateX(0)";
+  }
+  /**
+   * 滑动后处理
+   */
+  afterSwipe(xdiff: number) {
+    const swipeItems = document.getElementsByClassName("my-swipe-item");
+    const curItem = swipeItems[1] as HTMLElement;
+    const leftItem = swipeItems[0] as HTMLElement;
     const swipeContainer = curItem.parentNode as Node;
-    // 第一次移动时把最后一个元素复制一遍到最前面
-    if (this.curIndex == 0) {
-      swipeContainer.insertBefore(leftItem, curItem);
+    if (xdiff < 0) {
+      // 去掉新增的左结点
+      swipeContainer.removeChild(leftItem);
+      // 把当前节点放到最后面
+      swipeContainer.appendChild(curItem.cloneNode(true));
+      swipeContainer.removeChild(curItem);
+      this.curIndex = (this.curIndex + 1) % this.swipeItems.length;
     } else {
-      this.curIndex -= 1;
-    }
-    if (swipeContainer.childNodes.length > this.swipeItems.length) {
       swipeContainer.removeChild(swipeItems[swipeItems.length - 1]);
+      this.curIndex =
+        (this.curIndex + this.swipeItems.length - 1) % this.swipeItems.length;
+    }
+    (swipeContainer as HTMLElement).style.transform = "translateX(0)";
+  }
+  /**
+   * 滑动
+   */
+  swipe(moveX: number) {
+    this.setSwipeContainerTransform(moveX - window.innerWidth);
+  }
+  /**
+   * 自滑速度
+   */
+  speed = 20;
+  /**
+   * 定时器id
+   */
+  idInterval = 0;
+  /**
+   * 自动滑动
+   */
+  autoMove(moveX: number, afterSwipeHandle: Function) {
+    this.idInterval = setInterval(
+      this.autoMoveHandle,
+      20,
+      this.getSwipeContainerTransform() + moveX,
+      afterSwipeHandle
+    );
+  }
+  /**
+   * 获取滑动容器的偏移量
+   */
+  getSwipeContainerTransform(): number {
+    const swipeContainer = document.getElementsByClassName(
+      "my-swipe"
+    )[0] as HTMLElement;
+    return parseInt(
+      swipeContainer.style.transform.substr(
+        "translateX(".length,
+        swipeContainer.style.transform.indexOf("px") - "translateX(".length
+      )
+    );
+  }
+  /**
+   * 设置滑动容器的偏移量
+   */
+  setSwipeContainerTransform(offset: number) {
+    const swipeContainer = document.getElementsByClassName(
+      "my-swipe"
+    )[0] as HTMLElement;
+    swipeContainer.style.transform = "translateX(" + offset + "px)";
+  }
+  /**
+   * 自动滑动定时任务
+   */
+  autoMoveHandle(target: number, afterSwipeHandle: Function) {
+    let curOffset = this.getSwipeContainerTransform();
+    let offset = 0;
+    if (curOffset < target) {
+      offset = Math.min(this.speed, target - curOffset);
+    } else {
+      offset = Math.max(-this.speed, target - curOffset);
+    }
+    curOffset += offset;
+    this.setSwipeContainerTransform(curOffset);
+    if (curOffset == target) {
+      clearInterval(this.idInterval);
+      afterSwipeHandle(offset);
+      this.isAutoMove = false;
     }
   }
+  /**
+   * 判断是否是移动端
+   */
+  isMobile = false;
   /**
    * 移动起始x轴
    */
@@ -156,49 +294,80 @@ export default class Home extends Vue {
    */
   isDrag = false;
   /**
-   * 滑动
+   * 是否在自动移动
    */
-  touchMove(event: TouchEvent) {
-    const moveX = event.changedTouches[0].screenX - this.startX;
-    console.log("Move: x " + moveX);
-  }
+  isAutoMove = false;
   /**
    * 开始滑动
    */
   touchStart(event: TouchEvent) {
     this.startX = event.touches[0].screenX;
+    this.beginSwipe();
+  }
+  /**
+   * 滑动
+   */
+  touchMove(event: TouchEvent) {
+    if (this.isAutoMove) {
+      return;
+    }
+    const moveX = event.changedTouches[0].screenX - this.startX;
+    this.swipe(moveX);
   }
   /**
    * 结束滑动
    */
   touchEnd(event: TouchEvent) {
+    if (this.isAutoMove) {
+      return;
+    }
     const moveX = event.changedTouches[0].screenX - this.startX;
-    console.log("Move End: x " + moveX);
+    this.endSwipe(moveX);
   }
   /**
    * 鼠标按下
    */
   mouseDown(event: MouseEvent) {
+    if (this.isMobile) {
+      return;
+    }
     this.isDrag = true;
     this.startX = event.screenX;
+    this.beginSwipe();
   }
   /**
    * 鼠标移动
    */
   mouseMove(event: MouseEvent) {
-    if (!this.isDrag) {
+    if (!this.isDrag || this.isAutoMove || this.isMobile) {
       return;
     }
     const moveX = event.screenX - this.startX;
-    console.log("Move: x " + moveX);
+    this.swipe(moveX);
   }
   /**
    * 鼠标抬起
    */
-  mouseUp(event: any) {
+  mouseUp(event: MouseEvent) {
+    if (this.isAutoMove || this.isMobile) {
+      return;
+    }
     this.isDrag = false;
     const moveX = event.screenX - this.startX;
-    console.log("Move End: x " + moveX);
+    this.endSwipe(moveX);
+  }
+  /**
+   * 切换动画
+   */
+  switchChange() {
+    this.isRandomColor = !this.isRandomColor;
+    const mySwitchTop = this.$refs.mySwitchTop as HTMLElement;
+    const animation =
+      (this.isRandomColor ? "my-switch-top-check" : "my-switch-top-uncheck") +
+      " 1s 1";
+    console.log(animation);
+    mySwitchTop.style.animation = animation;
+    mySwitchTop.style.animationFillMode = "forwards";
   }
 }
 
@@ -238,6 +407,9 @@ interface TabbarItem {
 </script>
 
 <style scoped>
+.about {
+  line-height: 0;
+}
 .my-navbar {
   display: flex;
   height: 3rem;
@@ -247,6 +419,7 @@ interface TabbarItem {
   border-style: solid; */
   align-items: center;
   justify-content: center;
+  line-height: normal;
 }
 .my-left-text::before {
   content: "";
@@ -264,7 +437,7 @@ interface TabbarItem {
 .my-navbar-right-content::after {
   content: "\e63f";
   position: absolute;
-  top: 1rem;
+  top: 0.9rem;
   right: 1.3rem;
   font-size: 1.2rem;
   font-family: "my-icon-setting";
@@ -276,6 +449,7 @@ interface TabbarItem {
   font-size: 1.2rem;
 }
 .my-button-content {
+  line-height: normal;
   display: flex;
   justify-content: space-between;
   flex-wrap: wrap;
@@ -311,11 +485,13 @@ interface TabbarItem {
   display: flex;
   position: fixed;
   bottom: 0;
+  line-height: normal;
 }
 .my-logo {
   width: 100%;
 }
-.my-swipe {
+.my-swipe-container {
+  line-height: normal;
   white-space: nowrap;
   overflow: hidden;
 }
@@ -334,5 +510,112 @@ interface TabbarItem {
 @font-face {
   font-family: "my-icon-setting";
   src: url("../assets/setting.ttf") format("truetype");
+}
+.my-round-button {
+  margin-top: 5px;
+  margin-bottom: 20px;
+  height: 40px;
+  line-height: 1.2;
+  color: #fff;
+  border-radius: 20px;
+  background: #07c160;
+  font-size: 1rem;
+  cursor: pointer;
+}
+.my-swipe-indicator {
+  position: relative;
+  top: -30px;
+}
+.my-swipe-indicator-marker {
+  content: "";
+  display: inline-block;
+  margin-left: 5px;
+  margin-right: 5px;
+  width: 5px;
+  height: 5px;
+  border-radius: 50%;
+  opacity: 50%;
+  background-color: #fff;
+}
+.my-swipe-indicator-marker-selected {
+  opacity: 1;
+}
+.my-switch-bottom {
+  width: 80px;
+  height: 40px;
+  border-radius: 20px;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  cursor: pointer;
+}
+.my-switch-bottom-unchecked {
+  background-color: #fff;
+}
+.my-switch-bottom-checked {
+  background-color: #1989fa;
+}
+.my-switch-top {
+  position: relative;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  top: -2px;
+  background-color: #fff;
+  border: 1px solid rgba(0, 0, 0, 0.1);
+  box-shadow: 0 3px 1px 0 rgba(0, 0, 0, 0.05), 0 2px 2px 0 rgba(0, 0, 0, 0.1),
+    0 3px 3px 0 rgba(0, 0, 0, 0.05);
+}
+.my-switch-top-checked {
+  animation: my-switch-top-check 0.2s 1;
+  animation-fill-mode: forwards;
+}
+.my-switch-top-unchecked {
+  animation: my-switch-top-uncheck 0.2s 1;
+  animation-fill-mode: forwards;
+}
+@keyframes my-switch-top-check {
+  from {
+    left: -20px;
+  }
+  to {
+    left: 20px;
+  }
+}
+
+@-webkit-keyframes my-switch-top-check /*Safari and Chrome*/ {
+  from {
+    left: -20px;
+  }
+  to {
+    left: 20px;
+  }
+}
+@keyframes my-switch-top-uncheck {
+  from {
+    left: 20px;
+  }
+  to {
+    left: -20px;
+  }
+}
+
+@-webkit-keyframes my-switch-top-uncheck /*Safari and Chrome*/ {
+  from {
+    left: 20px;
+  }
+  to {
+    left: -20px;
+  }
+}
+.my-cover {
+  position: absolute;
+  left: 0px;
+  top: 0px;
+  background: rgba(0, 0, 0, 1);
+  width: 100%; /*宽度设置为100%，这样才能使隐藏背景层覆盖原页面*/
+  height: 100%;
+  filter: alpha(opacity=60); /*设置透明度为60%*/
+  opacity: 0.6; /*非IE浏览器下设置透明度为60%*/
+  z-index: 999;
+  overflow: hidden;
 }
 </style>

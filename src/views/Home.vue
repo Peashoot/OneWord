@@ -436,6 +436,9 @@ class WordResp {
 }
 </script>
 <style>
+.home {
+  line-height: 0;
+}
 .logo {
   width: 100%;
   margin: 0;
@@ -482,5 +485,8 @@ class WordResp {
 }
 div .place-holder {
   height: 3.125rem;
+}
+.my-swipe {
+  line-height: normal;
 }
 </style>
