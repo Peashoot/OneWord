@@ -1,15 +1,22 @@
 <template>
   <div class="about">
-    <div class="my-navbar">
-      <div class="my-navbar-content my-navbar-left-content" @click="toHomePage">
-        <span class="my-left-text">返回</span>
-      </div>
-      <div class="my-navbar-content my-navbar-middle-content">
-        <span class="my-title">标题</span>
-      </div>
-      <div class="my-navbar-content my-navbar-right-content"></div>
-    </div>
+    <my-navbar
+      left-text="返回"
+      title="标题"
+      @left-click="toHomePage"
+      left-arrow
+      placeholder
+      fixed
+      border
+      safe-area-inset-top
+      z-index="9999"
+    >
+      <template #right>
+        <span class="my-setting-icon"></span>
+      </template>
+    </my-navbar>
     <!-- <img src="//api.mtyqx.cn/tapi/random.php" alt="愿得一人心" class="my-logo"> -->
+
     <!-- <div class="my-button-content">
       <button
         class="my-menu-item"
@@ -23,7 +30,8 @@
         ><span>{{ item.name }}</span>
       </button>
     </div> -->
-    <div class="my-swipe-container">
+
+    <!-- <div class="my-swipe-container">
       <div
         class="my-swipe"
         @touchstart="touchStart($event)"
@@ -54,30 +62,24 @@
           ]"
         ></div>
       </div>
-    </div>
+    </div> -->
+
     <button class="my-round-button">不满意，换一个</button>
-    <div class="my-switch-container">
-      <button
-        :class="[
-          isRandomColor
-            ? 'my-switch-bottom-checked'
-            : 'my-switch-bottom-unchecked',
-          'my-switch-bottom',
-        ]"
-        @click="isRandomColor = !isRandomColor"
-      >
-        <button
-          :class="[
-            isRandomColor ? 'my-switch-top-checked' : 'my-switch-top-unchecked',
-            'my-switch-top',
-          ]"
-          ref="mySwitchTop"
-          style="left: -20px"
-        ></button>
-      </button>
+    <div>
+      <my-icon name="camera"></my-icon>
     </div>
+    <my-switch
+      :status="isRandomColor"
+      @click="isRandomColor = !isRandomColor"
+    ></my-switch>
+    <my-tabbar>
+      <my-tabbar-item>测试1</my-tabbar-item>
+      <my-tabbar-item>测试2</my-tabbar-item>
+      <my-tabbar-item>测试3</my-tabbar-item>
+      <my-tabbar-item>测试4</my-tabbar-item>
+    </my-tabbar>
     <div class="my-cover" v-show="showColor"></div>
-    <div class="my-tabbar my-tabbar-height">
+    <!-- <div class="my-tabbar my-tabbar-height">
       <button
         class="my-tabbar-item"
         v-for="(item, index) in tabbarItems"
@@ -89,20 +91,38 @@
         <span>{{ item.icon }}</span> <span>{{ item.name }}</span>
       </button>
     </div>
-    <div class="my-tabbar-height"></div>
+    <div class="my-tabbar-height"></div> -->
   </div>
 </template>
 
 <script lang="ts">
 import { Component, Vue } from "vue-property-decorator";
-@Component
+import {
+  MySwitch,
+  MySwipe,
+  MyNavbar,
+  MyTabbar,
+  MyTabbarItem,
+  MyIcon,
+} from "../components";
+@Component({
+  components: {
+    "my-switch": MySwitch,
+    "my-swipe": MySwipe,
+    "my-navbar": MyNavbar,
+    "my-tabbar": MyTabbar,
+    "my-tabbar-item": MyTabbarItem,
+    "my-icon": MyIcon,
+  },
+})
 export default class Home extends Vue {
   menuItems = new Array<MenuItem>();
   tabbarItems = new Array<TabbarItem>();
   swipeItems = new Array<string>();
   curIndex = 0;
   isRandomColor = false;
-  showColor = true;
+  showColor = false;
+  swithWidth = 40;
   mounted() {
     for (let i = 1; i <= 5; i++) {
       this.menuItems.push({ name: "按钮" + i });
@@ -356,19 +376,6 @@ export default class Home extends Vue {
     const moveX = event.screenX - this.startX;
     this.endSwipe(moveX);
   }
-  /**
-   * 切换动画
-   */
-  switchChange() {
-    this.isRandomColor = !this.isRandomColor;
-    const mySwitchTop = this.$refs.mySwitchTop as HTMLElement;
-    const animation =
-      (this.isRandomColor ? "my-switch-top-check" : "my-switch-top-uncheck") +
-      " 1s 1";
-    console.log(animation);
-    mySwitchTop.style.animation = animation;
-    mySwitchTop.style.animationFillMode = "forwards";
-  }
 }
 
 interface MenuItem {
@@ -410,40 +417,11 @@ interface TabbarItem {
 .about {
   line-height: 0;
 }
-.my-navbar {
-  display: flex;
-  height: 3rem;
-  /* border: 0;
-  border-bottom: 1px;
-  border-color: black;
-  border-style: solid; */
-  align-items: center;
-  justify-content: center;
-  line-height: normal;
-}
-.my-left-text::before {
-  content: "";
-  position: absolute;
-  left: 1.3rem;
-  display: inline-block;
-  height: 0.5rem;
-  width: 0.5rem;
-  border-width: 0 0 2px 2px;
-  border-color: #000;
-  border-style: solid;
-  transform: matrix(0.71, 0.71, -0.71, 0.71, 0, 6);
-  -webkit-transform: matrix(0.71, 0.71, -0.71, 0.71, 0, 6);
-}
-.my-navbar-right-content::after {
+.my-setting-icon::after {
   content: "\e63f";
-  position: absolute;
-  top: 0.9rem;
-  right: 1.3rem;
+  margin-left: 2rem;
   font-size: 1.2rem;
   font-family: "my-icon-setting";
-}
-.my-navbar-content {
-  width: 33.33%;
 }
 .my-title {
   font-size: 1.2rem;
@@ -469,7 +447,7 @@ interface TabbarItem {
 .my-menu-item:active {
   opacity: 0.5;
 }
-.my-tabbar-item {
+/* .my-tabbar-item {
   height: 100%;
   font-size: 0.75rem;
   padding: 0;
@@ -486,7 +464,7 @@ interface TabbarItem {
   position: fixed;
   bottom: 0;
   line-height: normal;
-}
+} */
 .my-logo {
   width: 100%;
 }
@@ -539,72 +517,6 @@ interface TabbarItem {
 }
 .my-swipe-indicator-marker-selected {
   opacity: 1;
-}
-.my-switch-bottom {
-  width: 80px;
-  height: 40px;
-  border-radius: 20px;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  cursor: pointer;
-}
-.my-switch-bottom-unchecked {
-  background-color: #fff;
-}
-.my-switch-bottom-checked {
-  background-color: #1989fa;
-}
-.my-switch-top {
-  position: relative;
-  width: 40px;
-  height: 40px;
-  border-radius: 50%;
-  top: -2px;
-  background-color: #fff;
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  box-shadow: 0 3px 1px 0 rgba(0, 0, 0, 0.05), 0 2px 2px 0 rgba(0, 0, 0, 0.1),
-    0 3px 3px 0 rgba(0, 0, 0, 0.05);
-}
-.my-switch-top-checked {
-  animation: my-switch-top-check 0.2s 1;
-  animation-fill-mode: forwards;
-}
-.my-switch-top-unchecked {
-  animation: my-switch-top-uncheck 0.2s 1;
-  animation-fill-mode: forwards;
-}
-@keyframes my-switch-top-check {
-  from {
-    left: -20px;
-  }
-  to {
-    left: 20px;
-  }
-}
-
-@-webkit-keyframes my-switch-top-check /*Safari and Chrome*/ {
-  from {
-    left: -20px;
-  }
-  to {
-    left: 20px;
-  }
-}
-@keyframes my-switch-top-uncheck {
-  from {
-    left: 20px;
-  }
-  to {
-    left: -20px;
-  }
-}
-
-@-webkit-keyframes my-switch-top-uncheck /*Safari and Chrome*/ {
-  from {
-    left: 20px;
-  }
-  to {
-    left: -20px;
-  }
 }
 .my-cover {
   position: absolute;
