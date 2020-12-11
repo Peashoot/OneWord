@@ -9,7 +9,6 @@
       fixed
       border
       safe-area-inset-top
-      z-index="9999"
     >
       <template #right>
         <span class="my-setting-icon"></span>
@@ -17,7 +16,7 @@
     </my-navbar>
     <!-- <img src="//api.mtyqx.cn/tapi/random.php" alt="愿得一人心" class="my-logo"> -->
 
-    <!-- <div class="my-button-content">
+    <div class="my-button-content">
       <button
         class="my-menu-item"
         v-for="(item, menuIndex) in menuItems"
@@ -29,7 +28,7 @@
         <span v-if="item.icon != null && item.icon != ''">{{ item.icon }}</span
         ><span>{{ item.name }}</span>
       </button>
-    </div> -->
+    </div>
 
     <!-- <div class="my-swipe-container">
       <div
@@ -66,17 +65,18 @@
 
     <button class="my-round-button">不满意，换一个</button>
     <div>
-      <my-icon name="camera"></my-icon>
+      <my-icon name="camera" badge="9" dot size="2rem"></my-icon>
     </div>
     <my-switch
       :status="isRandomColor"
       @click="isRandomColor = !isRandomColor"
     ></my-switch>
-    <my-tabbar>
-      <my-tabbar-item>测试1</my-tabbar-item>
-      <my-tabbar-item>测试2</my-tabbar-item>
-      <my-tabbar-item>测试3</my-tabbar-item>
-      <my-tabbar-item>测试4</my-tabbar-item>
+    <div style="height: 50px"></div>
+    <my-tabbar fixed placeholder safe-area-inset-bottom>
+      <my-tabbar-item icon="user-circle">测试1</my-tabbar-item>
+      <my-tabbar-item icon="user-circle-o" dot>测试2</my-tabbar-item>
+      <my-tabbar-item icon="user-o" badge="2">测试3</my-tabbar-item>
+      <my-tabbar-item icon="vcard">测试4</my-tabbar-item>
     </my-tabbar>
     <div class="my-cover" v-show="showColor"></div>
     <!-- <div class="my-tabbar my-tabbar-height">

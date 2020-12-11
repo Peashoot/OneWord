@@ -1,20 +1,32 @@
 <template>
-  <div class="my-tabbar-item">
+  <div
+    class="my-tabbar-item"
+    :class="{ 'my-tabbar-item-active': active }"
+    :style="{ color: color }"
+    @click="itemClick"
+  >
     <slot name="icon">
-      <div class="my-tabbar-item-icon">🤢</div>
+      <my-icon
+        :name="icon"
+        :class-prefix="iconPrefix"
+        :dot="dot"
+        :badge="badge"
+      ></my-icon>
     </slot>
     <div class="my-tabbar-item-name"><slot></slot></div>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue } from "vue-property-decorator";
-@Component
+import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import MyIcon from "./MyIcon.vue";
+import MyTabbar from "./MyTabbar.vue";
+@Component({
+  components: {
+    "my-icon": MyIcon,
+  },
+})
 export default class MyTabbarItem extends Vue {
-  /**
-   * 显示的标签名称
-   */
-  value!: string;
   /**
    * 标签名称，作为匹配的标识符
    */
@@ -28,7 +40,7 @@ export default class MyTabbarItem extends Vue {
   /**
    * 图标类名前缀
    */
-  @Prop()
+  @Prop({ default: "fa" })
   "icon-prefix"!: string;
   /**
    * 是否显示图标右上角小红点
@@ -55,6 +67,61 @@ export default class MyTabbarItem extends Vue {
    */
   @Prop({ type: Boolean })
   replace!: boolean;
+  /**
+   * 是否激活
+   */
+  active = false;
+  /**
+   * 编号
+   */
+  index = 0;
+  /**
+   * 当前颜色
+   */
+  color = "#000";
+  /**
+   * 启动时加载颜色
+   */
+  mounted() {
+    this.color = this.getItemColor();
+  }
+  /**
+   * 获取当前元素的颜色
+   */
+  getItemColor() {
+    const parent = this.$parent as MyTabbar;
+    if (!parent) {
+      return "#000";
+    }
+    const color = this.active ? parent.activeColor : parent.inactiveColor;
+    return color;
+  }
+  @Watch("active")
+  onActiveChanged() {
+    this.color = this.getItemColor();
+  }
+  /**
+   * 元素点击
+   */
+  itemClick() {
+    const parent = this.$parent as MyTabbar;
+    if (!parent) {
+      return;
+    }
+    if (parent["before-change"] as Function) {
+      if ((parent["before-change"] as Function).call(this, this.name)) {
+        parent.innerValue = this.name || this.index;
+      }
+    } else if (parent["before-change"] as Promise<boolean>) {
+      (parent["before-change"] as Promise<boolean>).then((result) => {
+        if (result) {
+          parent.innerValue = this.name || this.index;
+        }
+      });
+    } else {
+      parent.innerValue = this.name || this.index;
+    }
+  }
 }
 </script>
 
@@ -69,5 +136,10 @@ export default class MyTabbarItem extends Vue {
   justify-content: center;
   align-items: center;
   cursor: pointer;
+  font-size: 0.75rem;
+  padding: 0;
+}
+.my-icon {
+  margin: 0.25rem 0;
 }
 </style>

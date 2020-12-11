@@ -139,8 +139,9 @@ export default class MyNavbar extends Vue {
   border-style: solid;
 }
 .my-navbar-save-area {
+  position: fixed;
   width: 100%;
-  height: 0.3rem;
+  height: 0.5rem;
 }
 .my-navbar-left-text::before {
   content: "";

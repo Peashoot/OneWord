@@ -1,3 +1,5 @@
+export { default as MyTag }
+    from './MyTag.vue'
 export { default as MyNavbar }
     from './MyNavbar.vue'
 export { default as MyButton }

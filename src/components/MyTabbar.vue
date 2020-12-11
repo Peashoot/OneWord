@@ -1,13 +1,27 @@
 <template>
   <div class="my-tabbar">
-    <div class="my-tabbar-container my-tabbar-height">
-      <slot></slot>
+    <div :class="{ 'my-tabbar-fixed': fixed }">
+      <div
+        :class="[
+          'my-tabbar-container',
+          'my-tabbar-height',
+          { 'my-tabbar-border': border },
+        ]"
+      >
+        <slot></slot>
+      </div>
+      <div v-if="safeAreaInsetBottom" class="my-tabbar-safe-area"></div>
     </div>
-    <div class="my-tabbar-height"></div>
+    <div
+      v-if="placeholder && safeAreaInsetBottom"
+      class="my-tabbar-safe-area"
+    ></div>
+    <div v-if="placeholder" class="my-tabbar-height"></div>
   </div>
 </template>
 <script lang="ts">
-import { Component, Model, Prop, Vue } from "vue-property-decorator";
+import { Component, Model, Prop, Vue, Watch } from "vue-property-decorator";
+import MyTabbarItem from "./MyTabbarItem.vue";
 @Component
 export default class MyTabbar extends Vue {
   /**
@@ -34,12 +48,12 @@ export default class MyTabbar extends Vue {
    * 选中标签的颜色
    */
   @Prop({ default: "#1989fa" })
-  "active-color"!: string;
+  activeColor!: string;
   /**
    * 未选中标签的颜色
    */
   @Prop({ default: "#7d7e80" })
-  "inactive-color"!: string;
+  inactiveColor!: string;
   /**
    * 是否开启路由模式
    */
@@ -66,6 +80,33 @@ export default class MyTabbar extends Vue {
    */
   @Model("change")
   change!: string;
+  /**
+   * 内部值
+   */
+  innerValue = this.value;
+
+  mounted() {
+    this.setActiveItem();
+  }
+
+  @Watch("value")
+  onValueChanged(newVal: string | number) {
+    this.innerValue = newVal;
+  }
+  
+  @Watch("innerValue")
+  @Watch("children")
+  setActiveItem() {
+    const _this = this;
+    this.$children.forEach(function (item, index) {
+      const tabbarItem = item as MyTabbarItem;
+      if (!tabbarItem) {
+        return;
+      }
+      tabbarItem.index = index;
+      tabbarItem.active = (tabbarItem.name || index) === _this.innerValue;
+    });
+  }
 }
 </script>
 <style scoped>
@@ -76,19 +117,23 @@ export default class MyTabbar extends Vue {
   bottom: 0;
   display: flex;
   box-sizing: content-box;
+  background-color: #fff;
 }
 .my-tabbar-height {
-  height: 2.3rem;
+  height: 3.5rem;
 }
 .my-tabbar-fixed {
   position: fixed;
+  width: 100%;
+  bottom: 0;
 }
-.my-tabbar-item {
-  height: 100%;
-  font-size: 0.75rem;
-  padding: 0;
+.my-tabbar-border {
+  border-width: 0.0625rem 0 0 0;
+  border-style: solid;
+  border-color: #000;
 }
-.my-tabbar-item span {
-  display: block;
+.my-tabbar-safe-area {
+  height: 0.5rem;
+  background-color: #fff;
 }
 </style>
