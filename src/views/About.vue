@@ -72,7 +72,7 @@
       @click="isRandomColor = !isRandomColor"
     ></my-switch>
     <div style="height: 50px"></div>
-    <my-tabbar fixed placeholder safe-area-inset-bottom>
+    <my-tabbar fixed placeholder safe-area-inset-bottom @change="change">
       <my-tabbar-item icon="user-circle">测试1</my-tabbar-item>
       <my-tabbar-item icon="user-circle-o" dot>测试2</my-tabbar-item>
       <my-tabbar-item icon="user-o" badge="2">测试3</my-tabbar-item>
@@ -375,6 +375,9 @@ export default class Home extends Vue {
     this.isDrag = false;
     const moveX = event.screenX - this.startX;
     this.endSwipe(moveX);
+  }
+  change() {
+    console.log("abc");
   }
 }
 

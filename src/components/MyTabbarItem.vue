@@ -19,6 +19,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
+import { RawLocation } from "vue-router";
 import MyIcon from "./MyIcon.vue";
 import MyTabbar from "./MyTabbar.vue";
 @Component({
@@ -96,6 +97,9 @@ export default class MyTabbarItem extends Vue {
     const color = this.active ? parent.activeColor : parent.inactiveColor;
     return color;
   }
+  /**
+   * 激活状态变更时修改字体颜色
+   */
   @Watch("active")
   onActiveChanged() {
     this.color = this.getItemColor();
@@ -110,16 +114,32 @@ export default class MyTabbarItem extends Vue {
     }
     if (parent["before-change"] as Function) {
       if ((parent["before-change"] as Function).call(this, this.name)) {
-        parent.innerValue = this.name || this.index;
+        this.clickEvent(parent);
       }
     } else if (parent["before-change"] as Promise<boolean>) {
       (parent["before-change"] as Promise<boolean>).then((result) => {
         if (result) {
-          parent.innerValue = this.name || this.index;
+          this.clickEvent(parent);
         }
       });
     } else {
-      parent.innerValue = this.name || this.index;
+      this.clickEvent(parent);
+    }
+  }
+  /**
+   * 项点击事件
+   */
+  clickEvent(parent: MyTabbar) {
+    parent.innerValue = this.name || this.index;
+    if (!parent.route) {
+      return;
+    }
+    if (this.url != null) {
+      this.$router.push(this.url);
+    } else if (typeof this.to === "string") {
+      this.$router.push(this.to);
+    } else if (this.to as RawLocation) {
+      this.$router.push(this.to as RawLocation);
     }
   }
 }

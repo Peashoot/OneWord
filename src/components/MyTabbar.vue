@@ -1,6 +1,6 @@
 <template>
   <div class="my-tabbar">
-    <div :class="{ 'my-tabbar-fixed': fixed }">
+    <div :class="{ 'my-tabbar-fixed': fixed }" :style="{ 'z-index': zIndex }">
       <div
         :class="[
           'my-tabbar-container',
@@ -84,16 +84,22 @@ export default class MyTabbar extends Vue {
    * 内部值
    */
   innerValue = this.value;
-
+  /**
+   * 装载时选中激活的子组件
+   */
   mounted() {
     this.setActiveItem();
   }
-
+  /**
+   * Value改变时修改内部变量
+   */
   @Watch("value")
   onValueChanged(newVal: string | number) {
     this.innerValue = newVal;
   }
-  
+  /**
+   * value改变或者子组件发生变化时需重新选中子组件
+   */
   @Watch("innerValue")
   @Watch("children")
   setActiveItem() {
@@ -106,6 +112,7 @@ export default class MyTabbar extends Vue {
       tabbarItem.index = index;
       tabbarItem.active = (tabbarItem.name || index) === _this.innerValue;
     });
+    this.$emit("change", this.innerValue);
   }
 }
 </script>
