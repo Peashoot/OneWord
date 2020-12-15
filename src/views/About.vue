@@ -16,30 +16,21 @@
     </my-navbar>
     <!-- <img src="//api.mtyqx.cn/tapi/random.php" alt="愿得一人心" class="my-logo"> -->
 
-    <!-- <div class="my-button-content">
-      <button
-        class="my-menu-item"
-        v-for="(item, menuIndex) in menuItems"
-        :key="menuIndex"
-        :style="{
-          'background-image': item.backImage,
-        }"
-      >
-        <span v-if="item.icon != null && item.icon != ''">{{ item.icon }}</span
-        ><span>{{ item.name }}</span>
-      </button>
-    </div> -->
+    <my-pull-refresh
+      v-model="tmpLoading"
+      @refresh="refreshSleep(2000)"
+      :successText="'abcdesf'"
+    >
+      <my-menu>
+        <my-menu-item
+          v-for="(item, menuIndex) in menuItems"
+          :key="menuIndex"
+          :icon="item.icon"
+          >{{ item.name }}</my-menu-item
+        >
+      </my-menu>
 
-    <my-menu>
-      <my-menu-item
-        v-for="(item, menuIndex) in menuItems"
-        :key="menuIndex"
-        :icon="item.icon"
-        >{{ item.name }}</my-menu-item
-      >
-    </my-menu>
-
-    <!-- <div class="my-swipe-container">
+      <!-- <div class="my-swipe-container">
       <div
         class="my-swipe"
         @touchstart="touchStart($event)"
@@ -71,18 +62,24 @@
         ></div>
       </div>
     </div> -->
-
-    <button class="my-round-button" @click="showColor = !showColor">
-      不满意，换一个
-    </button>
-    <div>
-      <my-icon name="camera" badge="9" dot size="2rem"></my-icon>
-    </div>
-    <my-switch
-      :status="isRandomColor"
-      @click="isRandomColor = !isRandomColor"
-    ></my-switch>
-    <div style="height: 50px"></div>
+      <button class="my-round-button" @click="showColor = !showColor">
+        不满意，换一个
+      </button>
+      <div>
+        <my-icon
+          name="camera"
+          badge="9"
+          dot
+          size="2rem"
+          @click="print('emit too')"
+        ></my-icon>
+      </div>
+      <my-switch
+        v-model="isRandomColor"
+        @click="isRandomColor = !isRandomColor"
+      ></my-switch>
+      <div style="height: 50px"></div
+    ></my-pull-refresh>
     <my-tabbar fixed placeholder safe-area-inset-bottom @change="change">
       <my-tabbar-item icon="user-circle">测试1</my-tabbar-item>
       <my-tabbar-item icon="user-circle-o" dot>测试2</my-tabbar-item>
@@ -121,6 +118,7 @@ import {
   MyOverlay,
   MyMenu,
   MyMenuItem,
+  MyPullRefresh,
 } from "../components";
 @Component({
   components: {
@@ -133,6 +131,7 @@ import {
     "my-overlay": MyOverlay,
     "my-menu": MyMenu,
     "my-menu-item": MyMenuItem,
+    "my-pull-refresh": MyPullRefresh,
   },
 })
 export default class Home extends Vue {
@@ -140,7 +139,7 @@ export default class Home extends Vue {
   tabbarItems = new Array<TabbarItem>();
   swipeItems = new Array<string>();
   curIndex = 0;
-  isRandomColor = false;
+  isRandomColor = true;
   showColor = false;
   swithWidth = 40;
   mounted() {
@@ -179,6 +178,12 @@ export default class Home extends Vue {
   toHomePage() {
     window.location.href = "//www.peashoot.xyz";
   }
+
+  async refreshSleep(time: number) {
+    this.tmpLoading = true;
+    await new Promise((resolve) => setTimeout(resolve, time));
+    this.tmpLoading = false;
+  }
   /**
    * 开始滑动时
    */
@@ -201,6 +206,8 @@ export default class Home extends Vue {
    * 超过该宽度时自动切换，否则重置
    */
   rate = 0.3;
+
+  tmpLoading = false;
   /**
    * 结束滑动
    */
@@ -397,7 +404,10 @@ export default class Home extends Vue {
     this.endSwipe(moveX);
   }
   change() {
-    console.log("abc");
+    // TODO: change
+  } // eslint-disable-next-line
+  print(obj: any) {
+    console.log(obj);
   }
 }
 

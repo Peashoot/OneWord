@@ -1,7 +1,7 @@
 <template>
   <div
     :class="['my-overlay', className]"
-    @click="$emit('click', $event.target.value)"
+    @click="click($event)"
     v-show="show"
     :style="{
       'z-index': zIndex,
@@ -14,7 +14,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Model, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Emit, Prop, Vue, Watch } from "vue-property-decorator";
 @Component
 export default class MyOverlay extends Vue {
   /**
@@ -50,8 +50,10 @@ export default class MyOverlay extends Vue {
   /**
    * 点击时触发
    */
-  @Model("click")
-  click!: string;
+  @Emit()// eslint-disable-next-line
+  click(event: MouseEvent) {
+    // TODO: click
+  }
   /**
    * 监听show，当状态改变时根据lockScroll判断是否遮罩层滚动
    */

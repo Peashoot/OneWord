@@ -16,7 +16,7 @@
       >
         <div
           class="my-navbar-content my-navbar-left-content"
-          @click="$emit('left-click', $event.target.value)"
+          @click="leftClick($event)"
         >
           <slot name="left"
             ><span :class="{ 'my-navbar-left-text': leftArrow }">{{
@@ -31,7 +31,7 @@
         </div>
         <div
           class="my-navbar-content my-navbar-right-content"
-          @click="$emit('right-click', $event.target.value)"
+          @click="rightClick($event)"
         >
           <slot name="right"
             ><span class="my-navbar-right-text">{{ rightText }}</span></slot
@@ -52,7 +52,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Model, Prop, Vue } from "vue-property-decorator";
+import { Component, Emit, Prop, Vue } from "vue-property-decorator";
 @Component
 export default class MyNavbar extends Vue {
   /**
@@ -64,17 +64,17 @@ export default class MyNavbar extends Vue {
    * 左侧文案
    */
   @Prop({ type: String, default: "" })
-  "left-text"!: string;
+  leftText!: string;
   /**
    * 右侧文案
    */
   @Prop({ type: String, default: "" })
-  "right-text"!: string;
+  rightText!: string;
   /**
    * 是否显示左侧箭头
    */
   @Prop({ type: Boolean })
-  "left-arrow"!: boolean;
+  leftArrow!: boolean;
   /**
    * 是否显示下边框
    */
@@ -94,22 +94,26 @@ export default class MyNavbar extends Vue {
    * 导航栏 z-index
    */
   @Prop({ default: 1 })
-  "z-index"!: number | string;
+  zIndex!: number | string;
   /**
    * 是否开启顶部安全区适配
    */
   @Prop({ type: Boolean })
-  "safe-area-inset-top"!: boolean;
+  safeAreaInsetTop!: boolean;
   /**
    * 点击左侧按钮时触发
    */
-  @Model("left-click", { type: String })
-  "left-click"!: string;
+  @Emit() // eslint-disable-next-line
+  leftClick(event: MouseEvent) {
+    // TODO: click
+  }
   /**
    * 点击右侧按钮时触发
    */
-  @Model("right-click", { type: String })
-  "right-click"!: string;
+  @Emit() // eslint-disable-next-line
+  rightClick(event: MouseEvent) {
+    // TODO: click
+  }
 }
 </script>
 

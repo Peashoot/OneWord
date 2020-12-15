@@ -298,7 +298,6 @@ export default class Home extends Vue {
    * 复制格言
    */
   copyWords() {
-    console.log("start copy");
     // 获取需要复制的dom
     const copyElements = document.getElementsByClassName("copy-item");
     if (copyElements.length < 1) {

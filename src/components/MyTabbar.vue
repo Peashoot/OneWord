@@ -20,7 +20,7 @@
   </div>
 </template>
 <script lang="ts">
-import { Component, Model, Prop, Vue, Watch } from "vue-property-decorator";
+import { Component, Emit, Prop, Vue, Watch } from "vue-property-decorator";
 import MyTabbarItem from "./MyTabbarItem.vue";
 @Component
 export default class MyTabbar extends Vue {
@@ -43,7 +43,7 @@ export default class MyTabbar extends Vue {
    * 元素 z-index
    */
   @Prop({ type: [Number, String], default: 1 })
-  "z-index"!: number | string;
+  zIndex!: number | string;
   /**
    * 选中标签的颜色
    */
@@ -68,18 +68,20 @@ export default class MyTabbar extends Vue {
    * 是否开启底部安全区适配，设置 fixed 时默认开启
    */
   @Prop({ type: Boolean })
-  "safe-area-inset-bottom"!: boolean;
+  safeAreaInsetBottom!: boolean;
   /**
    * 切换标签前的回调函数，返回 false 可阻止切换，支持返回 Promise
    * (name) => boolean | Promise
    */
   @Prop()
-  "before-change"!: Function | Promise<boolean>;
+  beforeChange!: Function | Promise<boolean>;
   /**
    * 切换标签时触发
    */
-  @Model("change")
-  change!: string;
+  @Emit() // eslint-disable-next-line
+  change(active: number | string) {
+    // TODO: change
+  }
   /**
    * 内部值
    */
@@ -112,7 +114,7 @@ export default class MyTabbar extends Vue {
       tabbarItem.index = index;
       tabbarItem.active = (tabbarItem.name || index) === _this.innerValue;
     });
-    this.$emit("change", this.innerValue);
+    this.change(this.innerValue);
   }
 }
 </script>

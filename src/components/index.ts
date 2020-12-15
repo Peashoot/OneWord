@@ -20,3 +20,7 @@ export { default as MyMenuItem }
     from './MyMenuItem.vue'
 export { default as MyOverlay }
     from './MyOverlay.vue'
+export { default as MyImage }
+    from './MyImage.vue'
+export { default as MyPullRefresh }
+    from './MyPullRefresh.vue'

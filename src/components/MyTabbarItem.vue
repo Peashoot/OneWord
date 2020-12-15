@@ -112,12 +112,12 @@ export default class MyTabbarItem extends Vue {
     if (!parent) {
       return;
     }
-    if (parent["before-change"] as Function) {
-      if ((parent["before-change"] as Function).call(this, this.name)) {
+    if (parent.beforeChange as Function) {
+      if ((parent.beforeChange as Function).call(this, this.name)) {
         this.clickEvent(parent);
       }
-    } else if (parent["before-change"] as Promise<boolean>) {
-      (parent["before-change"] as Promise<boolean>).then((result) => {
+    } else if (parent.beforeChange as Promise<boolean>) {
+      (parent.beforeChange as Promise<boolean>).then((result) => {
         if (result) {
           this.clickEvent(parent);
         }

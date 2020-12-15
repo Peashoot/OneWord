@@ -29,7 +29,6 @@ export default class MyMenu extends Vue {
 .my-menu {
   line-height: normal;
   display: flex;
-  justify-content: space-between;
   flex-wrap: wrap;
 }
 </style>

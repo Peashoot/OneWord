@@ -2,17 +2,17 @@
   <div class="my-switch-container">
     <div
       class="my-switch-bottom"
-      @click="$emit('click', $event.target.value)"
+      @click="click($event)"
       :style="{
         width: width,
         height: height,
         'border-radius': height,
-        'background-color': status ? activeColor : inactiveColor,
+        'background-color': value ? activeColor : inactiveColor,
       }"
     >
       <div
         :class="[
-          status ? 'my-switch-top-checked' : 'my-switch-top-unchecked',
+          value ? 'my-switch-top-checked' : 'my-switch-top-unchecked',
           'my-switch-top',
         ]"
         ref="mySwitchTop"
@@ -23,19 +23,26 @@
 </template>
 
 <script lang="ts">
-import { Component, Model, Prop, Vue } from "vue-property-decorator";
+import { Component, Emit, Model, Prop, Vue } from "vue-property-decorator";
 @Component
 export default class MySwitch extends Vue {
   /**
    * 开关状态
    */
-  @Prop()
-  status!: boolean;
+  @Model("input")
+  value!: boolean;
+
+  @Emit()
+  input(status: boolean) {
+    // TODO: update value
+  }
   /**
    * 状态切换事件
    */
-  @Model("click")
-  click!: string;
+  @Emit() // eslint-disable-next-line
+  click(event: MouseEvent) {
+    // TODO: click
+  }
   /**
    * 高度
    */
@@ -50,12 +57,12 @@ export default class MySwitch extends Vue {
    * 关闭时的背景色
    */
   @Prop({ type: String, default: "#fff" })
-  "inactive-color"!: string;
+  inactiveColor!: string;
   /**
    * 打开时的背景色
    */
   @Prop({ type: String, default: "#1989fa" })
-  "active-color"!: string;
+  activeColor!: string;
 }
 </script>
 

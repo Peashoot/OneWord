@@ -1,14 +1,18 @@
 <template>
-  <div class="my-menu-item" @click="$emit('click', $event)">
+  <div class="my-menu-item" @click="click($event)">
     <slot name="icon">
-      <my-icon class="my-menu-item-icon" v-if="icon && icon != ''" :name="icon" />
+      <my-icon
+        class="my-menu-item-icon"
+        v-if="icon && icon != ''"
+        :name="icon"
+      />
     </slot>
     <slot></slot>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Model } from "vue-property-decorator";
+import { Component, Vue, Prop, Emit } from "vue-property-decorator";
 import MyIcon from "./MyIcon.vue";
 @Component({
   components: {
@@ -29,8 +33,10 @@ export default class MyMenuItem extends Vue {
   /**
    * 点击事件
    */
-  @Model("click")
-  click!: string;
+  @Emit() // eslint-disable-next-line
+  click(event: MouseEvent) {
+    // TODO: click
+  }
 }
 </script>
 

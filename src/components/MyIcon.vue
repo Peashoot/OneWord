@@ -1,7 +1,7 @@
 <template>
   <div
     :class="['my-icon']"
-    @click="$emit('click', $event.target.value)"
+    @click="click($event.target.value)"
     :style="{
       'font-size': /^\d+$/.test(size.toString()) ? size + 'px' : size,
       color: color,
@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Model, Prop, Vue } from "vue-property-decorator";
+import { Component, Emit, Prop, Vue } from "vue-property-decorator";
 import MyTag from "./MyTag.vue";
 @Component({
   components: {
@@ -67,8 +67,10 @@ export default class MyIcon extends Vue {
   /**
    * 点击图标时触发
    */
-  @Model("click")
-  click!: string;
+  @Emit()// eslint-disable-next-line
+  click(event: MouseEvent) {
+    //TODO: click
+  }
   /**
    * 是否是图片路径
    */
