@@ -19,7 +19,7 @@
 
 <script lang="ts">
 import { Component, Prop, Vue, Watch } from "vue-property-decorator";
-import { RawLocation } from "vue-router";
+import { Location } from "vue-router";
 import MyIcon from "./MyIcon.vue";
 import MyTabbar from "./MyTabbar.vue";
 @Component({
@@ -42,7 +42,7 @@ export default class MyTabbarItem extends Vue {
    * 图标类名前缀
    */
   @Prop({ default: "fa" })
-  "icon-prefix"!: string;
+  iconPrefix!: string;
   /**
    * 是否显示图标右上角小红点
    */
@@ -135,11 +135,13 @@ export default class MyTabbarItem extends Vue {
       return;
     }
     if (this.url != null) {
-      this.$router.push(this.url);
+      this.$router.push({ path: this.url, replace: this.replace });
     } else if (typeof this.to === "string") {
-      this.$router.push(this.to);
-    } else if (this.to as RawLocation) {
-      this.$router.push(this.to as RawLocation);
+      this.$router.push({ name: this.to, replace: this.replace });
+    } else if (this.to as Location) {
+      const loc = this.to as Location;
+      loc.replace = this.replace;
+      this.$router.push(loc);
     }
   }
 }

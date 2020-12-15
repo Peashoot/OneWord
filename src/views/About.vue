@@ -16,7 +16,7 @@
     </my-navbar>
     <!-- <img src="//api.mtyqx.cn/tapi/random.php" alt="愿得一人心" class="my-logo"> -->
 
-    <div class="my-button-content">
+    <!-- <div class="my-button-content">
       <button
         class="my-menu-item"
         v-for="(item, menuIndex) in menuItems"
@@ -28,7 +28,16 @@
         <span v-if="item.icon != null && item.icon != ''">{{ item.icon }}</span
         ><span>{{ item.name }}</span>
       </button>
-    </div>
+    </div> -->
+
+    <my-menu>
+      <my-menu-item
+        v-for="(item, menuIndex) in menuItems"
+        :key="menuIndex"
+        :icon="item.icon"
+        >{{ item.name }}</my-menu-item
+      >
+    </my-menu>
 
     <!-- <div class="my-swipe-container">
       <div
@@ -63,7 +72,9 @@
       </div>
     </div> -->
 
-    <button class="my-round-button">不满意，换一个</button>
+    <button class="my-round-button" @click="showColor = !showColor">
+      不满意，换一个
+    </button>
     <div>
       <my-icon name="camera" badge="9" dot size="2rem"></my-icon>
     </div>
@@ -78,20 +89,23 @@
       <my-tabbar-item icon="user-o" badge="2">测试3</my-tabbar-item>
       <my-tabbar-item icon="vcard">测试4</my-tabbar-item>
     </my-tabbar>
-    <div class="my-cover" v-show="showColor"></div>
-    <!-- <div class="my-tabbar my-tabbar-height">
-      <button
-        class="my-tabbar-item"
-        v-for="(item, index) in tabbarItems"
-        :key="index"
-        :style="{
-          width: 100 / tabbarItems.length + '%',
-        }"
-      >
-        <span>{{ item.icon }}</span> <span>{{ item.name }}</span>
-      </button>
-    </div>
-    <div class="my-tabbar-height"></div> -->
+    <my-overlay :show="showColor" @click="showColor = !showColor">
+      <div class="my-button-content">
+        <button
+          class="my-menu-item"
+          v-for="(item, menuIndex) in menuItems"
+          :key="menuIndex"
+          :style="{
+            'background-image': item.backImage,
+          }"
+        >
+          <span v-if="item.icon != null && item.icon != ''">{{
+            item.icon
+          }}</span
+          ><span>{{ item.name }}</span>
+        </button>
+      </div>
+    </my-overlay>
   </div>
 </template>
 
@@ -104,6 +118,9 @@ import {
   MyTabbar,
   MyTabbarItem,
   MyIcon,
+  MyOverlay,
+  MyMenu,
+  MyMenuItem,
 } from "../components";
 @Component({
   components: {
@@ -113,6 +130,9 @@ import {
     "my-tabbar": MyTabbar,
     "my-tabbar-item": MyTabbarItem,
     "my-icon": MyIcon,
+    "my-overlay": MyOverlay,
+    "my-menu": MyMenu,
+    "my-menu-item": MyMenuItem,
   },
 })
 export default class Home extends Vue {
@@ -124,8 +144,8 @@ export default class Home extends Vue {
   showColor = false;
   swithWidth = 40;
   mounted() {
-    for (let i = 1; i <= 5; i++) {
-      this.menuItems.push({ name: "按钮" + i });
+    for (let i = 1; i <= 11; i++) {
+      this.menuItems.push({ name: "按钮" + i, icon: "vcard" });
     }
     for (let i = 1; i <= 5; i++) {
       this.swipeItems.push("Swpie" + i);
@@ -450,24 +470,6 @@ interface TabbarItem {
 .my-menu-item:active {
   opacity: 0.5;
 }
-/* .my-tabbar-item {
-  height: 100%;
-  font-size: 0.75rem;
-  padding: 0;
-}
-.my-tabbar-item span {
-  display: block;
-}
-.my-tabbar-height {
-  height: 2.3rem;
-}
-.my-tabbar {
-  width: 100%;
-  display: flex;
-  position: fixed;
-  bottom: 0;
-  line-height: normal;
-} */
 .my-logo {
   width: 100%;
 }

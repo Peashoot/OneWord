@@ -14,3 +14,9 @@ export { default as MyTabbar }
     from './MyTabbar.vue'
 export { default as MyTabbarItem }
     from './MyTabbarItem.vue'
+export { default as MyMenu }
+    from './MyMenu.vue'
+export { default as MyMenuItem }
+    from './MyMenuItem.vue'
+export { default as MyOverlay }
+    from './MyOverlay.vue'

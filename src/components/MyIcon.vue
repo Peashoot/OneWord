@@ -14,7 +14,9 @@
     ></my-tag>
     <img class="my-icon-image" v-if="isImage(name)" :src="name" />
     <div class="my-icon-dot my-icon-info" v-if="dot"></div>
-    <div class="my-icon-badge my-icon-info" v-if="badge && badge != ''">{{ badge }}</div>
+    <div class="my-icon-badge my-icon-info" v-if="badge && badge != ''">
+      {{ badge }}
+    </div>
   </div>
 </template>
 
@@ -72,18 +74,6 @@ export default class MyIcon extends Vue {
    */
   isImage(name: string) {
     return name && name.indexOf("/") > 0;
-  }
-  /**
-   * 创建标签
-   */
-  createTag() {
-    let html = "<" + this.tag + ' class="' + this["class-prefix"];
-    if (!this.isImage(this.name)) {
-      html += " " + this["class-prefix"] + "-" + this.name;
-    }
-    html += '"></' + this.tag + ">";
-    console.log(html);
-    return html;
   }
 }
 /**
