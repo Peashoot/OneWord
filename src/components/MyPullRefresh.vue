@@ -1,13 +1,21 @@
 <template>
   <div
     class="my-pull-refresh"
-    @touchstart="startPull($event)"
-    @touchmove="pulling($event)"
-    @touchend="loosePull($event)"
+    @touchstart="touchStart($event)"
+    @touchmove="touchMove($event)"
+    @touchend="touchEnd($event)"
+    @mousedown="mouseDown($event)"
+    @mousemove="mouseMove($event)"
+    @mouseup="mouseUp($event)"
   >
     <div
-      class="my-pull-refresh-track"
-      :style="{ transform: 'translateY(' + distance + 'px)' }"
+      class="my-pull-refresh-container"
+      ref="container"
+      :style="{
+        'transition-property': 'transform',
+        'transition-duration': animationDuration + 'ms',
+        transform: 'translateY(' + distance + 'px)',
+      }"
     >
       <slot name="normal">
         <div
@@ -26,10 +34,7 @@
           <div class="my-pull-refresh-prompt" v-if="status == 'loading'">
             <slot name="loading">{{ loadingText }}</slot>
           </div>
-          <div
-            class="my-pull-refresh-prompt"
-            v-if="successText && successText != '' && status == 'success'"
-          >
+          <div class="my-pull-refresh-prompt" v-if="status == 'success'">
             <slot name="success">{{ successText }}</slot>
           </div>
         </div></slot
@@ -47,6 +52,7 @@ import {
   Model,
   Watch,
   Emit,
+  Ref,
 } from "vue-property-decorator";
 @Component
 export default class MyPullRefresh extends Vue {
@@ -55,7 +61,9 @@ export default class MyPullRefresh extends Vue {
    */
   @Model("input")
   value!: boolean;
-
+  /**
+   * 更新value
+   */
   @Emit() // eslint-disable-next-line
   input(value: boolean) {
     // TODO: update value
@@ -83,12 +91,12 @@ export default class MyPullRefresh extends Vue {
   /**
    * 刷新成功提示展示时长(ms)
    */
-  @Prop({ type: Number, default: 300 })
+  @Prop({ type: Number, default: 500 })
   successDuration!: number;
   /**
    * 动画时长
    */
-  @Prop({ type: [Number, String] })
+  @Prop({ type: [Number, String], default: 200 })
   animationDuration!: number | string;
   /**
    * 顶部内容高度
@@ -108,6 +116,11 @@ export default class MyPullRefresh extends Vue {
     // TODO: refresh
   }
   /**
+   * 下拉容器
+   */
+  @Ref()
+  container!: HTMLElement;
+  /**
    * 开始下拉的y坐标
    */
   beginY = 0;
@@ -120,42 +133,89 @@ export default class MyPullRefresh extends Vue {
    */
   distance = 0;
   /**
+   * 开始下拉-桌面端事件
+   */
+  mouseDown(event: MouseEvent) {
+    this.startPull(event.clientY);
+  }
+  /**
+   * 开始下拉-移动端事件
+   */
+  touchStart(event: TouchEvent) {
+    this.startPull(event.touches[0].clientY);
+  }
+  /**
    * 开始下拉
    */
-  startPull(event: TouchEvent) {
-    this.beginY = event.touches[0].clientY;
+  startPull(clientY: number) {
+    this.beginY = clientY;
+    this.container.style.transitionProperty = "none";
+  }
+  /**
+   * 下拉中-桌面端事件
+   */
+  mouseMove(event: MouseEvent) {
+    if (this.beginY <= 0) {
+      return;
+    }
+    const distance = event.clientY - this.beginY;
+    this.pulling(distance);
+  }
+  /**
+   * 下拉中-移动端事件
+   */
+  touchMove(event: TouchEvent) {
+    const distance = event.changedTouches[0].clientY - this.beginY;
+    this.pulling(distance);
   }
   /**
    * 下拉中
    */
-  pulling(event: TouchEvent) {
-    const diffY = event.changedTouches[0].clientY - this.beginY;
-    if (diffY <= 0) {
+  pulling(distance: number) {
+    if (distance <= 0) {
       this.distance = 0;
       return;
     }
-    this.distance = this.ease(diffY);
-    if (this.headHeight < diffY) {
-      // TODO: show loosing text
+    this.distance = this.ease(distance);
+    if (this.headHeight < distance) {
       this.status = "loosing";
     } else {
-      // TODO: show pulling text
       this.status = "pulling";
     }
   }
   /**
+   * 停止下发-桌面端事件
+   */
+  mouseUp(event: MouseEvent) {
+    if (this.beginY <= 0) {
+      return;
+    }
+    const distance = event.clientY - this.beginY;
+    this.beginY = 0;
+    this.loosePull(distance);
+  }
+  /**
+   * 停止下拉-移动端事件
+   */
+  touchEnd(event: TouchEvent) {
+    const distance = event.changedTouches[0].clientY - this.beginY;
+    this.loosePull(distance);
+  }
+  /**
    * 停止下拉
    */
-  loosePull(event: TouchEvent) {
-    const distance = event.changedTouches[0].clientY - this.beginY;
+  loosePull(distance: number) {
+    this.container.style.transitionProperty = "transform";
     if (this.headHeight < distance) {
-      // TODO: do refresh
       this.status = "loading";
       this.distance = this.headHeight;
       this.input(true);
       this.$nextTick(function () {
         this.refresh();
       });
+    } else {
+      this.status = "";
+      this.distance = 0;
     }
   }
   /**
@@ -199,7 +259,7 @@ export default class MyPullRefresh extends Vue {
   overflow: hidden;
   user-select: none;
 }
-.van-pull-refresh-track {
+.van-pull-refresh-container {
   position: relative;
   height: 100%;
   transition-property: transform;

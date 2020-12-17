@@ -21,14 +21,14 @@
       @refresh="refreshSleep(2000)"
       :successText="'abcdesf'"
     >
-      <my-menu>
+      <!-- <my-menu>
         <my-menu-item
           v-for="(item, menuIndex) in menuItems"
           :key="menuIndex"
           :icon="item.icon"
           >{{ item.name }}</my-menu-item
         >
-      </my-menu>
+      </my-menu> -->
 
       <!-- <div class="my-swipe-container">
       <div
@@ -62,6 +62,16 @@
         ></div>
       </div>
     </div> -->
+      <my-swipe style="width: 100%; height: 250px" vertical :width="100" :loop="false" :height="80">
+        <my-swipe-item
+          v-for="(item, swipeIndex) in swipeItems"
+          :key="swipeIndex"
+          :style="{
+            'background-color': lightColorGen(50),
+          }"
+          >swipe{{ swipeIndex }}</my-swipe-item
+        >
+      </my-swipe>
       <button class="my-round-button" @click="showColor = !showColor">
         不满意，换一个
       </button>
@@ -119,6 +129,7 @@ import {
   MyMenu,
   MyMenuItem,
   MyPullRefresh,
+  MySwipeItem,
 } from "../components";
 @Component({
   components: {
@@ -132,6 +143,7 @@ import {
     "my-menu": MyMenu,
     "my-menu-item": MyMenuItem,
     "my-pull-refresh": MyPullRefresh,
+    "my-swipe-item": MySwipeItem,
   },
 })
 export default class Home extends Vue {
@@ -459,46 +471,8 @@ interface TabbarItem {
 .my-title {
   font-size: 1.2rem;
 }
-.my-button-content {
-  line-height: normal;
-  display: flex;
-  justify-content: space-between;
-  flex-wrap: wrap;
-}
-.my-menu-item {
-  margin: 1.5rem;
-  width: 7rem;
-  height: 7rem;
-  border: 0;
-  background-color: cyan;
-  text-align: center;
-  box-shadow: 0px 0px 10px #000;
-}
-.my-menu-item span {
-  display: block;
-}
-.my-menu-item:active {
-  opacity: 0.5;
-}
 .my-logo {
   width: 100%;
-}
-.my-swipe-container {
-  line-height: normal;
-  white-space: nowrap;
-  overflow: hidden;
-}
-.my-swipe-item {
-  display: inline-block;
-  width: 100%;
-  height: 15rem;
-  /* 禁止选中文本 */
-  -moz-user-select: none; /*火狐*/
-  -webkit-user-select: none; /*webkit浏览器*/
-  -ms-user-select: none; /*IE10*/
-  -khtml-user-select: none; /*早期浏览器*/
-  -webkit-touch-callout: none;
-  user-select: none;
 }
 @font-face {
   font-family: "my-icon-setting";
@@ -514,35 +488,5 @@ interface TabbarItem {
   background: #07c160;
   font-size: 1rem;
   cursor: pointer;
-}
-.my-swipe-indicator {
-  position: relative;
-  top: -30px;
-}
-.my-swipe-indicator-marker {
-  content: "";
-  display: inline-block;
-  margin-left: 5px;
-  margin-right: 5px;
-  width: 5px;
-  height: 5px;
-  border-radius: 50%;
-  opacity: 50%;
-  background-color: #fff;
-}
-.my-swipe-indicator-marker-selected {
-  opacity: 1;
-}
-.my-cover {
-  position: absolute;
-  left: 0px;
-  top: 0px;
-  background: rgba(0, 0, 0, 1);
-  width: 100%; /*宽度设置为100%，这样才能使隐藏背景层覆盖原页面*/
-  height: 100%;
-  filter: alpha(opacity=60); /*设置透明度为60%*/
-  opacity: 0.6; /*非IE浏览器下设置透明度为60%*/
-  z-index: 999;
-  overflow: hidden;
 }
 </style>

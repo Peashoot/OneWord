@@ -32,7 +32,7 @@ export default class MySwitch extends Vue {
   @Model("input")
   value!: boolean;
 
-  @Emit()
+  @Emit() // eslint-disable-next-line
   input(status: boolean) {
     // TODO: update value
   }

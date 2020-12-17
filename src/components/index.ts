@@ -8,6 +8,8 @@ export { default as MyIcon }
     from './MyIcon.vue'
 export { default as MySwipe }
     from './MySwipe.vue'
+export { default as MySwipeItem }
+    from './MySwipeItem.vue'
 export { default as MySwitch }
     from './MySwitch.vue'
 export { default as MyTabbar }
