@@ -17,7 +17,11 @@ export default class MySwipeItem extends Vue {
   /**
    * 是否加载
    */
-  show!: boolean;
+  show = true;
+  /**
+   * 当前序号
+   */
+  index = 0;
   /**
    * 点击时触发
    */
@@ -29,7 +33,6 @@ export default class MySwipeItem extends Vue {
    * 创建时根据父节点判断是否渲染
    */
   created() {
-    this.show = true;
     if (this.$parent as MySwipe) {
       const parent = this.$parent as MySwipe;
       if (parent.lazyRender) {

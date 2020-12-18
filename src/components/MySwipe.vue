@@ -21,7 +21,7 @@
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Emit, Ref, Watch } from "vue-property-decorator";
+import { Component, Prop, Vue, Emit, Ref } from "vue-property-decorator";
 import MySwipeItem from "./MySwipeItem.vue";
 @Component
 export default class MySwipe extends Vue {
@@ -38,7 +38,7 @@ export default class MySwipe extends Vue {
   /**
    * 初始位置索引值
    */
-  @Prop({ type: Number })
+  @Prop({ type: Number, default: 0 })
   initialSwipe!: number;
   /**
    * 滑块宽度，单位为px
@@ -101,6 +101,10 @@ export default class MySwipe extends Vue {
    * 装载时重绘
    */
   mounted() {
+    this.$nextTick(() => {
+      this.onCurIndexChanged(this.initialSwipe);
+      this.sortIndex();
+    });
     this.resize();
   }
   /**
@@ -160,8 +164,14 @@ export default class MySwipe extends Vue {
   /**
    * 子项个数
    */
+  // get childCount() {
+  //   return this.container.children.length;
+  // }
+
   get childCount() {
-    return this.container.children.length;
+    return this.$children.filter(
+      (i) => (i as MySwipeItem) && (i as MySwipeItem).show
+    ).length;
   }
   /**
    * 移动起始X轴
@@ -178,11 +188,10 @@ export default class MySwipe extends Vue {
   /**
    * 当前索引
    */
-  curIndex = 0;
+  curIndex = this.initialSwipe;
   /**
    * 索引变化时，对相邻元素进行渲染
    */
-  @Watch("curIndex", { immediate: true })
   onCurIndexChanged(newVal: number) {
     this.showChild(this.$children[newVal]);
     this.showChild(
@@ -195,6 +204,7 @@ export default class MySwipe extends Vue {
         (newVal - 1 + this.$children.length) % this.$children.length
       ]
     );
+    this.sortIndex();
   }
   /**
    * 渲染子元素
@@ -214,7 +224,7 @@ export default class MySwipe extends Vue {
    * 子元素高度
    */
   get childHeight() {
-    return (this.container.firstElementChild as HTMLElement).offsetHeight;
+    return (this.container.firstElementChild as HTMLElement)?.offsetHeight;
   }
   /**
    * 获取自动完成滑动的分界值
@@ -232,6 +242,27 @@ export default class MySwipe extends Vue {
         ? this.$children.length * this.childHeight
         : this.$children.length * this.childWidth
     );
+  }
+  /**
+   * 返回实际的index
+   */
+  get realIndex() {
+    if (this.curIndex < 0) {
+      return this.curIndex;
+    }
+    if (this.$children[this.curIndex] as MySwipeItem) {
+      return (this.$children[this.curIndex] as MySwipeItem).index;
+    }
+    return this.curIndex;
+  }
+  /**
+   * 对index进行排序
+   */
+  sortIndex() {
+    let r = 0;
+    this.$children
+      .filter((i) => (i as MySwipeItem) && (i as MySwipeItem).show)
+      .forEach((i) => ((i as MySwipeItem).index = r++));
   }
   /**
    * 事件预处理
@@ -325,18 +356,18 @@ export default class MySwipe extends Vue {
     if (this.loop) {
       this.setElementTransform(
         this.container,
-        distX - this.childWidth * this.curIndex,
-        distY - this.childHeight * this.curIndex
+        distX - this.childWidth * this.realIndex,
+        distY - this.childHeight * this.realIndex
       );
     } else {
       this.setElementTransform(
         this.container,
         Math.max(
-          distX - this.childWidth * this.curIndex,
+          distX - this.childWidth * this.realIndex,
           -this.childWidth * this.$children.length + this.$el.clientWidth
         ),
         Math.max(
-          distY - this.childHeight * this.curIndex,
+          distY - this.childHeight * this.realIndex,
           -this.childHeight * this.$children.length + this.$el.clientHeight
         )
       );
@@ -371,6 +402,10 @@ export default class MySwipe extends Vue {
     this.afterSwipe(distX, distY);
   }
   /**
+   * 上一个延时事件id
+   */
+  lastTimeoutId = 0;
+  /**
    * 滑动后
    */
   afterSwipe(distX: number, distY: number) {
@@ -387,49 +422,60 @@ export default class MySwipe extends Vue {
       return;
     }
     let tempIndex = this.curIndex;
+    let tempRealIndex = this.realIndex;
     if (Math.abs(compareDist) > this.completeDemarcation) {
       // TODO: 继续完成滑动
       tempIndex += compareDist > 0 ? -1 : 1;
+      tempRealIndex += compareDist > 0 ? -1 : 1;
     }
     if (this.loop) {
       this.setElementTransform(
         this.container,
-        -this.childWidth * tempIndex,
-        -this.childHeight * tempIndex
+        -this.childWidth * tempRealIndex,
+        -this.childHeight * tempRealIndex
       );
-      setTimeout(() => {
+      this.lastTimeoutId = setTimeout(() => {
+        clearTimeout(this.lastTimeoutId);
+        this.curIndex = tempIndex;
+        this.onCurIndexChanged(tempIndex);
         this.container.style.transitionProperty = "none";
         // 当最右边的元素补到左边后，滑动完后整体向左滑动childCount- 1个距离
-        if (tempIndex == -1) {
+        if (this.curIndex == -1) {
+          this.curIndex = this.$children.length - 1;
           this.setElementTransform(
             this.container,
             -this.childWidth * (this.childCount - 1),
             -this.childHeight * (this.childCount - 1)
           );
-          tempIndex = this.childCount - 1;
-        } else if (tempIndex == this.childCount) {
+        } else if (this.curIndex == this.$children.length) {
+          this.curIndex = 0;
           // 当最左边的元素补到右边后，修改整体偏移为0
           this.container.style.removeProperty("transform");
-          tempIndex = 0;
+        } else {
+          this.setElementTransform(
+            this.container,
+            -this.childWidth * this.realIndex,
+            -this.childHeight * this.realIndex
+          );
         }
         // 清空原本设置的子元素偏移量
         this.removeTransform(this.container.firstElementChild);
         this.removeTransform(this.container.lastElementChild);
-        this.curIndex = tempIndex;
       }, parseInt(this.duration.toString()));
     } else {
+      this.curIndex = tempIndex;
+      this.onCurIndexChanged(tempIndex);
       this.setElementTransform(
         this.container,
         Math.max(
-          -this.childWidth * tempIndex,
+          -this.childWidth * this.curIndex,
           -this.childWidth * this.$children.length + this.$el.clientWidth
         ),
         Math.max(
-          -this.childHeight * tempIndex,
+          -this.childHeight * this.curIndex,
           -this.childHeight * this.$children.length + this.$el.clientHeight
         )
       );
-      this.curIndex = tempIndex;
     }
   }
   /**

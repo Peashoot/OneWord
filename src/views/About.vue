@@ -62,7 +62,14 @@
         ></div>
       </div>
     </div> -->
-      <my-swipe style="width: 100%; height: 250px" vertical :width="100" :loop="false" :height="80">
+      <my-swipe
+        style="width: 100%; height: 250px"
+        :loop="false"
+        :vertical="true"
+        :width="300"
+        :height="220"
+        :lazyRender="true"
+      >
         <my-swipe-item
           v-for="(item, swipeIndex) in swipeItems"
           :key="swipeIndex"
@@ -158,7 +165,7 @@ export default class Home extends Vue {
     for (let i = 1; i <= 11; i++) {
       this.menuItems.push({ name: "按钮" + i, icon: "vcard" });
     }
-    for (let i = 1; i <= 5; i++) {
+    for (let i = 1; i <= 50; i++) {
       this.swipeItems.push("Swpie" + i);
     }
     this.tabbarItems.push({ icon: "🤣", name: "随心随遇", link: "/sxsy" });
