@@ -16,12 +16,32 @@
     >
       <slot></slot>
     </div>
-    <slot name="indicator"><div class="my-swipe-indicator"></div></slot>
+    <slot name="indicator"
+      ><div
+        :class="[
+          'my-swipe-indicator',
+          vertical
+            ? 'my-swipe-indicator-vertical'
+            : 'my-swipe-indicator-horizontal',
+        ]"
+        v-show="showIndicators"
+      >
+        <div
+          v-for="(item, index) in realChildren"
+          :key="index"
+          :class="[
+            'my-swipe-indicator-item',
+            { 'my-swipe-indicator-item-checked': index == curIndex },
+          ]"
+          :style="{ 'background-color': indicatorColor }"
+          @click="swipeTo(index)"
+        ></div></div
+    ></slot>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Emit, Ref } from "vue-property-decorator";
+import { Component, Prop, Vue, Emit, Ref, Watch } from "vue-property-decorator";
 import MySwipeItem from "./MySwipeItem.vue";
 @Component
 export default class MySwipe extends Vue {
@@ -83,7 +103,7 @@ export default class MySwipe extends Vue {
   /**
    * 指示器颜色
    */
-  @Prop({ default: "#1989fa" })
+  @Prop({ default: "#fff" })
   indicatorColor!: string;
   /**
    * 滑动锁
@@ -114,6 +134,7 @@ export default class MySwipe extends Vue {
       if (this.curIndex < 0) {
         this.curIndex += this.$children.length;
       }
+      this.realChildren = this.$children.length;
       this.setElementTransform(
         this.container,
         -this.childWidth * this.realIndex,
@@ -200,6 +221,10 @@ export default class MySwipe extends Vue {
     ).length;
   }
   /**
+   * 实际子节点数量
+   */
+  realChildren = 0;
+  /**
    * 移动起始X轴
    */
   beginX = -1;
@@ -249,7 +274,7 @@ export default class MySwipe extends Vue {
    */
   get childWidth() {
     if (this.$children[0] as MySwipeItem) {
-      return parseInt((this.$children[0] as MySwipeItem).width.toString());
+      return parseInt((this.$children[0] as MySwipeItem).width?.toString());
     }
     return (this.container.firstElementChild as HTMLElement)?.offsetWidth;
   }
@@ -258,7 +283,7 @@ export default class MySwipe extends Vue {
    */
   get childHeight() {
     if (this.$children[0] as MySwipeItem) {
-      return parseInt((this.$children[0] as MySwipeItem).height.toString());
+      return parseInt((this.$children[0] as MySwipeItem).height?.toString());
     }
     return (this.container.firstElementChild as HTMLElement)?.offsetHeight;
   }
@@ -566,6 +591,21 @@ export default class MySwipe extends Vue {
         "px)";
     }
   }
+  /**
+   * 自动播放
+   */
+  autoplayTimerId = 0;
+  /**
+   * 当自动播放状态改变时，执行自动播放
+   */
+  @Watch("autoplay", { immediate: true })
+  onAutoPlayChanged(newVal: number | string) {
+    clearInterval(this.autoplayTimerId);
+    const autoplay = parseInt(newVal.toString());
+    if (this.loop && autoplay > 0) {
+      this.autoplayTimerId = setInterval(() => this.next(), autoplay);
+    }
+  }
 }
 </script>
 <style scoped>
@@ -574,6 +614,7 @@ export default class MySwipe extends Vue {
   overflow: hidden;
   width: 100%;
   height: 15rem;
+  line-height: normal;
 }
 .my-swipe-container {
   width: 100%;
@@ -589,5 +630,36 @@ export default class MySwipe extends Vue {
 }
 .my-swipe-indicator {
   position: absolute;
+  display: flex;
+  align-content: center;
+}
+.my-swipe-indicator-horizontal {
+  width: 80%;
+  left: 50%;
+  bottom: 1.5rem;
+  flex-direction: row;
+  flex-wrap: wrap;
+  transform: translate(-50%, 50%);
+  justify-content: center;
+}
+.my-swipe-indicator-vertical {
+  height: 80%;
+  left: 1.5rem;
+  top: 50%;
+  flex-direction: column;
+  flex-wrap: wrap-reverse;
+  transform: translate(50%, -50%);
+  justify-content: center;
+}
+.my-swipe-indicator-item {
+  margin: 0.3125rem;
+  width: 0.3125rem;
+  height: 0.3125rem;
+  border-radius: 50%;
+  opacity: 50%;
+  background-color: #fff;
+}
+.my-swipe-indicator-item-checked {
+  opacity: 100%;
 }
 </style>

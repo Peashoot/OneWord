@@ -44,7 +44,7 @@ export default class MySwipeItem extends Vue {
    * 宽度
    */
   get width() {
-    let de: number | string = this.$parent.$el.clientWidth;
+    let de: number | string = this.$parent.$el?.clientWidth;
     if (this.$parent as MySwipe) {
       const parent = this.$parent as MySwipe;
       if (!parent.loop && !parent.vertical) {
@@ -63,7 +63,7 @@ export default class MySwipeItem extends Vue {
    * 高度
    */
   get height() {
-    let de: number | string = this.$parent.$el.clientHeight;
+    let de: number | string = this.$parent.$el?.clientHeight;
     if (this.$parent as MySwipe) {
       const parent = this.$parent as MySwipe;
       if (!parent.loop && parent.vertical) {
