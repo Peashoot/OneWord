@@ -86,6 +86,11 @@ export default class MySwipe extends Vue {
   @Prop({ default: "#1989fa" })
   indicatorColor!: string;
   /**
+   * 滑动锁
+   */
+
+  swipeLock = false;
+  /**
    * 每一页轮播结束后触发
    */
   @Emit() // eslint-disable-next-line
@@ -104,6 +109,16 @@ export default class MySwipe extends Vue {
     this.$nextTick(() => {
       this.onCurIndexChanged(this.initialSwipe);
       this.sortIndex();
+      this.container.style.transitionProperty = "none";
+      this.curIndex = this.curIndex % this.$children.length;
+      if (this.curIndex < 0) {
+        this.curIndex += this.$children.length;
+      }
+      this.setElementTransform(
+        this.container,
+        -this.childWidth * this.realIndex,
+        -this.childHeight * this.realIndex
+      );
     });
     this.resize();
   }
@@ -112,12 +127,14 @@ export default class MySwipe extends Vue {
    */
   prev() {
     // TODO: 切换到上一轮播
+    this.swipeTo(this.curIndex - 1);
   }
   /**
    * 切换到下一轮播
    */
   next() {
     // TODO: 切换到下一轮播
+    this.swipeTo(this.curIndex + 1);
   }
   /**
    * 切换到指定位置
@@ -131,29 +148,42 @@ export default class MySwipe extends Vue {
     if (index == this.curIndex) {
       return;
     }
-    const step = index < this.curIndex ? 1 : -1;
-    for (; index != this.curIndex; index += step) {
-      // TODO: 什么也不做，只是为了让之间的这些元素能够被渲染
+    const step = index < this.curIndex ? -1 : 1;
+    for (; index != this.curIndex; this.curIndex += step) {
+      // TODO: 让之间的这些元素能够被渲染
+      this.showChild(this.$children[this.curIndex]);
     }
+    this.showChild(
+      this.$children[
+        (this.curIndex + 1 + this.$children.length) % this.$children.length
+      ]
+    );
+    this.showChild(
+      this.$children[
+        (this.curIndex - 1 + this.$children.length) % this.$children.length
+      ]
+    );
+    this.container.style.transitionProperty = "transform";
     if (this.loop) {
       this.setElementTransform(
         this.container,
-        -index * this.childWidth,
-        -index * this.childHeight
+        -this.realIndex * this.childWidth,
+        -this.realIndex * this.childHeight
       );
     } else {
       this.setElementTransform(
         this.container,
         Math.max(
-          -index * this.childWidth,
+          -this.realIndex * this.childWidth,
           -this.$children.length * this.childWidth + this.$el.clientWidth
         ),
         Math.max(
-          -index * this.childHeight,
+          -this.realIndex * this.childHeight,
           -this.$children.length * this.childHeight + this.$el.clientHeight
         )
       );
     }
+    this.change(this.curIndex);
   }
   /**
    * 外层元素大小或组件显示状态变化时，可以调用此方法来触发重绘
@@ -164,10 +194,6 @@ export default class MySwipe extends Vue {
   /**
    * 子项个数
    */
-  // get childCount() {
-  //   return this.container.children.length;
-  // }
-
   get childCount() {
     return this.$children.filter(
       (i) => (i as MySwipeItem) && (i as MySwipeItem).show
@@ -193,6 +219,10 @@ export default class MySwipe extends Vue {
    * 索引变化时，对相邻元素进行渲染
    */
   onCurIndexChanged(newVal: number) {
+    newVal = newVal % this.$children.length;
+    if (newVal < 0) {
+      newVal = newVal + this.$children.length;
+    }
     this.showChild(this.$children[newVal]);
     this.showChild(
       this.$children[
@@ -218,12 +248,18 @@ export default class MySwipe extends Vue {
    * 子元素宽度
    */
   get childWidth() {
+    if (this.$children[0] as MySwipeItem) {
+      return parseInt((this.$children[0] as MySwipeItem).width.toString());
+    }
     return (this.container.firstElementChild as HTMLElement)?.offsetWidth;
   }
   /**
    * 子元素高度
    */
   get childHeight() {
+    if (this.$children[0] as MySwipeItem) {
+      return parseInt((this.$children[0] as MySwipeItem).height.toString());
+    }
     return (this.container.firstElementChild as HTMLElement)?.offsetHeight;
   }
   /**
@@ -271,7 +307,7 @@ export default class MySwipe extends Vue {
     if (this.stopPropagation) {
       event.stopPropagation();
     }
-    return this.touchable;
+    return this.childCount > 1 && this.touchable;
   }
   /**
    * 开始滑动-移动端事件
@@ -295,6 +331,9 @@ export default class MySwipe extends Vue {
    * 开始滑动
    */
   beforeSwipe(beginX: number, beginY: number) {
+    if (this.swipeLock) {
+      return;
+    }
     this.beginX = beginX;
     this.beginY = beginY;
     this.container.style.transitionProperty = "none";
@@ -304,6 +343,9 @@ export default class MySwipe extends Vue {
    */
   touchMove(event: TouchEvent) {
     if (!this.eventPrehandle(event)) {
+      return;
+    }
+    if (this.beginX < 0 && this.beginY < 0) {
       return;
     }
     const distX = event.changedTouches[0].clientX - this.beginX;
@@ -380,7 +422,7 @@ export default class MySwipe extends Vue {
     if (!this.eventPrehandle(event)) {
       return;
     }
-    if (!this.touchable) {
+    if (this.beginX < 0 && this.beginY < 0) {
       return;
     }
     const distX = event.changedTouches[0].clientX - this.beginX;
@@ -423,6 +465,7 @@ export default class MySwipe extends Vue {
     }
     let tempIndex = this.curIndex;
     let tempRealIndex = this.realIndex;
+    this.swipeLock = true;
     if (Math.abs(compareDist) > this.completeDemarcation) {
       // TODO: 继续完成滑动
       tempIndex += compareDist > 0 ? -1 : 1;
@@ -461,21 +504,39 @@ export default class MySwipe extends Vue {
         // 清空原本设置的子元素偏移量
         this.removeTransform(this.container.firstElementChild);
         this.removeTransform(this.container.lastElementChild);
+        this.change(this.curIndex);
+        this.swipeLock = false;
       }, parseInt(this.duration.toString()));
     } else {
-      this.curIndex = tempIndex;
-      this.onCurIndexChanged(tempIndex);
       this.setElementTransform(
         this.container,
         Math.max(
-          -this.childWidth * this.curIndex,
+          -this.childWidth * tempRealIndex,
           -this.childWidth * this.$children.length + this.$el.clientWidth
         ),
         Math.max(
-          -this.childHeight * this.curIndex,
+          -this.childHeight * tempRealIndex,
           -this.childHeight * this.$children.length + this.$el.clientHeight
         )
       );
+      this.lastTimeoutId = setTimeout(() => {
+        this.curIndex = tempIndex;
+        this.onCurIndexChanged(tempIndex);
+        this.container.style.transitionProperty = "none";
+        this.setElementTransform(
+          this.container,
+          Math.max(
+            -this.childWidth * this.realIndex,
+            -this.childWidth * this.$children.length + this.$el.clientWidth
+          ),
+          Math.max(
+            -this.childHeight * this.realIndex,
+            -this.childHeight * this.$children.length + this.$el.clientHeight
+          )
+        );
+        this.change(this.curIndex);
+        this.swipeLock = false;
+      }, parseInt(this.duration.toString()));
     }
   }
   /**
@@ -511,6 +572,8 @@ export default class MySwipe extends Vue {
 .my-swipe {
   position: relative;
   overflow: hidden;
+  width: 100%;
+  height: 15rem;
 }
 .my-swipe-container {
   width: 100%;
