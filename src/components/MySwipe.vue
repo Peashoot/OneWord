@@ -174,6 +174,7 @@ export default class MySwipe extends Vue {
       // TODO: 让之间的这些元素能够被渲染
       this.showChild(this.$children[this.curIndex]);
     }
+    this.showChild(this.$children[this.curIndex]);
     this.showChild(
       this.$children[
         (this.curIndex + 1 + this.$children.length) % this.$children.length
@@ -184,6 +185,7 @@ export default class MySwipe extends Vue {
         (this.curIndex - 1 + this.$children.length) % this.$children.length
       ]
     );
+    this.sortIndex();
     this.container.style.transitionProperty = "transform";
     if (this.loop) {
       this.setElementTransform(
@@ -601,7 +603,7 @@ export default class MySwipe extends Vue {
   @Watch("autoplay", { immediate: true })
   onAutoPlayChanged(newVal: number | string) {
     clearInterval(this.autoplayTimerId);
-    const autoplay = parseInt(newVal.toString());
+    const autoplay = parseInt(newVal?.toString());
     if (this.loop && autoplay > 0) {
       this.autoplayTimerId = setInterval(() => this.next(), autoplay);
     }
