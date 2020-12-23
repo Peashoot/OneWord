@@ -4,7 +4,7 @@
       ><div class="my-picker-toolbar">
         <div
           class="my-picker-cancel my-picker-head-item my-pick-toolbar-left"
-          @click="cancel"
+          @click="innerCancel()"
         >
           <slot name="cancel">{{ cancelButtonText }}</slot>
         </div>
@@ -15,7 +15,7 @@
         </div>
         <div
           class="my-picker-confirm my-picker-toolbar-item my-pick-toolbar-right"
-          @click="confirm"
+          @click="innerConfirm()"
         >
           <slot name="confirm">{{ confirmButtonText }}</slot>
         </div>
@@ -28,7 +28,6 @@
           class="my-picker-option-list"
           v-for="(item, index) in depth"
           :key="index"
-          v-model="indexes[index]"
           :columns="getChild(index)"
           :visibleItemCount="visibleItemCount"
           :swipeDuration="swipeDuration"
@@ -38,6 +37,7 @@
           :itemHeight="itemHeight"
           :defaultIndex="getDefaultIndex(index)"
           :stopAnimation="stopAnimation"
+          v-model="indexes[index]"
         >
         </my-picker-option>
       </div>
@@ -47,7 +47,8 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Emit } from "vue-property-decorator";
+/* eslint-disable */
+import { Component, Vue, Prop, Emit, Watch } from "vue-property-decorator";
 import MyPickerOption from "./MyPickerOption.vue";
 @Component({
   components: {
@@ -216,26 +217,67 @@ export default class MyPicker extends Vue {
     return 0;
   }
   /**
+   * 当选择的索引发生修改后
+   */
+  @Watch("indexes", { deep: true })
+  onIndexesChanged() {
+    this.innerChange();
+  }
+  /**
+   * 确认-内部方法
+   */
+  innerConfirm() {
+    if (this.depth < 2) {
+      this.confirm(this.getChild(0)?.[this.indexes[0]], this.indexes[0]);
+    } else {
+      this.confirm(this.getValues(), this.getIndexes());
+    }
+  }
+  /**
    * 点击完成按钮时触发
    */
   @Emit()
-  confirm() {
+  confirm(values: string | string[], indexs: number | number[]) {
     // TODO: confirm
     this.stopAnimation = true;
     this.stopAnimation = false;
   }
   /**
+   * 取消-内部方法
+   */
+  innerCancel() {
+    if (this.depth < 2) {
+      this.cancel(this.getChild(0)?.[this.indexes[0]], this.indexes[0]);
+    } else {
+      this.cancel(this.getValues(), this.getIndexes());
+    }
+  }
+  /**
    * 点击取消按钮时触发
    */
   @Emit()
-  cancel() {
+  cancel(values: string | string[], indexs: number | number[]) {
     // TODO: cancel
+  }
+  /**
+   * 选项改变-内部方法
+   */
+  innerChange() {
+    if (this.depth < 2) {
+      this.change(this, this.getChild(0)?.[this.indexes[0]], this.indexes[0]);
+    } else {
+      this.change(this, this.getValues(), this.getIndexes());
+    }
   }
   /**
    * 选项改变时触发
    */
   @Emit()
-  change() {
+  change(
+    picker: MyPicker,
+    values: string | string[],
+    indexs: number | number[]
+  ) {
     // TODO: change
   }
   /**
@@ -253,9 +295,12 @@ export default class MyPicker extends Vue {
    */
   setValues(values: string[]) {
     for (let i = 0; i < this.depth && i < values.length; i++) {
-      this.indexes[i] =
+      this.indexes.splice(
+        i,
+        1,
         this.getChild(i)?.findIndex((item) => item === values[i]) ??
-        this.indexes[i];
+          this.indexes[i]
+      );
     }
   }
   /**
@@ -269,7 +314,7 @@ export default class MyPicker extends Vue {
    */
   setIndexes(indexes: number[]) {
     for (let i = 0; i < this.depth && i < indexes.length; i++) {
-      this.indexes[i] = indexes[i];
+      this.indexes.splice(i, 1, indexes[i]);
     }
   }
   /**
@@ -288,7 +333,7 @@ export default class MyPicker extends Vue {
       const child = this.getChild(columnIndex) ?? [];
       for (let i = 0; i < child.length; i++) {
         if (child[i].toString() === value.toString()) {
-          this.indexes[columnIndex] = i;
+          this.indexes.splice(columnIndex, 1, i);
         }
       }
     }
@@ -304,7 +349,7 @@ export default class MyPicker extends Vue {
    */
   setColumnIndex(columnIndex: number, optionIndex: number) {
     if (columnIndex < this.indexes.length) {
-      this.indexes[columnIndex] = optionIndex;
+      this.indexes.splice(columnIndex, 1, optionIndex);
     }
   }
   /**

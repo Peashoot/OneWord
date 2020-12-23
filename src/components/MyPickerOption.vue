@@ -112,10 +112,9 @@ export default class MyPickerOption extends Vue {
    */
   @Watch("value")
   onValueChanged(newVal: number) {
-    if (this.subIndex == newVal) {
-      return;
-    }
-    this.select(this.subIndex);
+    this.$nextTick(() => {
+      this.select(newVal);
+    });
   }
   /**
    * 当索引修改时通知到父级

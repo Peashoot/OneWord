@@ -67,8 +67,37 @@
       <div style="height: 50px"></div
     ></my-pull-refresh> -->
     <my-picker
+      ref="mypicker"
       :title="'标题'"
-      :columns="['杭州', '宁波', '温州', '绍兴', '湖州', '嘉兴', '金华', '衢州']"
+      @change="print('change')"
+      :columns="[
+        {
+          text: '浙江',
+          children: [
+            {
+              text: '杭州',
+              children: [{ text: '西湖区' }, { text: '余杭区' }],
+            },
+            {
+              text: '温州',
+              children: [{ text: '鹿城区' }, { text: '瓯海区' }],
+            },
+          ],
+        },
+        {
+          text: '福建',
+          children: [
+            {
+              text: '福州',
+              children: [{ text: '鼓楼区' }, { text: '台江区' }],
+            },
+            {
+              text: '厦门',
+              children: [{ text: '思明区' }, { text: '海沧区' }],
+            },
+          ],
+        },
+      ]"
     ></my-picker>
     <my-tabbar fixed placeholder safe-area-inset-bottom @change="change">
       <my-tabbar-item icon="user-circle">测试1</my-tabbar-item>
@@ -139,6 +168,8 @@ export default class Home extends Vue {
   swithWidth = 40;
   @Ref()
   myswipe!: MySwipe;
+  @Ref()
+  mypicker!: MyPicker;
   page = 0;
   isMobile = false;
   mounted() {
