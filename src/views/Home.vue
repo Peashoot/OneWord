@@ -39,9 +39,10 @@
                 'font-size': calcFontSize(word) + 'rem',
               }"
             >
-              <p :class="[{ 'copy-item': selectedIndex == index }, wordClass]">
-                {{ word }}
-              </p>
+              <p
+                :class="[{ 'copy-item': selectedIndex == index }, wordClass]"
+                v-text="word"
+              ></p>
             </div>
             <van-icon
               class="copy-icon"

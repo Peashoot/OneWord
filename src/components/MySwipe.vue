@@ -141,21 +141,21 @@ export default class MySwipe extends Vue {
         -this.childHeight * this.realIndex
       );
     });
-    this.resize();
   }
   /**
    * 切换到上一轮播
    */
   prev() {
-    // TODO: 切换到上一轮播
     this.swipeTo(this.curIndex - 1);
   }
   /**
    * 切换到下一轮播
    */
   next() {
-    // TODO: 切换到下一轮播
     this.swipeTo(this.curIndex + 1);
+    this.$children
+      .filter((item) => item as MySwipeItem)
+      .forEach((item) => (item as MySwipeItem).decideShow());
   }
   /**
    * 切换到指定位置
@@ -165,13 +165,12 @@ export default class MySwipe extends Vue {
     if (index < 0) {
       index += this.$children.length;
     }
-    // TODO: 切换到指定位置
     if (index == this.curIndex) {
       return;
     }
     const step = index < this.curIndex ? -1 : 1;
     for (; index != this.curIndex; this.curIndex += step) {
-      // TODO: 让之间的这些元素能够被渲染
+      // 让之间的这些元素能够被渲染
       this.showChild(this.$children[this.curIndex]);
     }
     this.showChild(this.$children[this.curIndex]);
@@ -212,7 +211,22 @@ export default class MySwipe extends Vue {
    * 外层元素大小或组件显示状态变化时，可以调用此方法来触发重绘
    */
   resize() {
-    // TODO: 重绘
+    this.$forceUpdate();
+    this.$nextTick(() => {
+      this.onCurIndexChanged(this.initialSwipe);
+      this.sortIndex();
+      this.container.style.transitionProperty = "none";
+      this.curIndex = this.curIndex % this.$children.length;
+      if (this.curIndex < 0) {
+        this.curIndex += this.$children.length;
+      }
+      this.realChildren = this.$children.length;
+      this.setElementTransform(
+        this.container,
+        -this.childWidth * this.realIndex,
+        -this.childHeight * this.realIndex
+      );
+    });
   }
   /**
    * 子项个数

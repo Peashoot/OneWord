@@ -19,23 +19,24 @@
           @click="leftClick($event)"
         >
           <slot name="left"
-            ><span :class="{ 'my-navbar-left-text': leftArrow }">{{
-              leftText
-            }}</span></slot
-          >
+            ><span
+              :class="{ 'my-navbar-left-text': leftArrow }"
+              v-text="leftText"
+            ></span
+          ></slot>
         </div>
         <div class="my-navbar-content my-navbar-middle-content">
           <slot name="title"
-            ><span class="my-navbar-title">{{ title }}</span></slot
-          >
+            ><span class="my-navbar-title" v-text="title"></span
+          ></slot>
         </div>
         <div
           class="my-navbar-content my-navbar-right-content"
           @click="rightClick($event)"
         >
           <slot name="right"
-            ><span class="my-navbar-right-text">{{ rightText }}</span></slot
-          >
+            ><span class="my-navbar-right-text" v-text="rightText"></span
+          ></slot>
         </div>
       </div>
     </div>
@@ -160,7 +161,7 @@ export default class MyNavbar extends Vue {
   -webkit-transform: matrix(0.71, 0.71, -0.71, 0.71, 0, 0);
 }
 .my-navbar-content {
-  width: 33.33%;
+  flex: 1;
 }
 .my-navbar-title {
   font-size: 1.2rem;

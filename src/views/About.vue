@@ -16,52 +16,20 @@
     </my-navbar>
     <!-- <img src="//api.mtyqx.cn/tapi/random.php" alt="愿得一人心" class="my-logo"> -->
 
-    <my-pull-refresh
+    <!-- <my-pull-refresh
       v-model="tmpLoading"
       @refresh="refreshSleep(2000)"
       :successText="'abcdesf'"
     >
-      <!-- <my-menu>
+      <my-menu>
         <my-menu-item
           v-for="(item, menuIndex) in menuItems"
           :key="menuIndex"
           :icon="item.icon"
-          >{{ item.name }}</my-menu-item
+          v-text="item.name"
+          ></my-menu-item
         >
-      </my-menu> -->
-
-      <!-- <div class="my-swipe-container">
-      <div
-        class="my-swipe"
-        @touchstart="touchStart($event)"
-        @touchmove="touchMove($event)"
-        @touchend="touchEnd($event)"
-        @mousedown="mouseDown($event)"
-        @mouseup="mouseUp($event)"
-        @mousemove="mouseMove($event)"
-      >
-        <div
-          class="my-swipe-item"
-          v-for="(item, swipeIndex) in swipeItems"
-          :key="swipeIndex"
-          :style="{
-            'background-color': lightColorGen(50),
-          }"
-        >
-          {{ item }}
-        </div>
-      </div>
-      <div class="my-swipe-indicator">
-        <div
-          v-for="(item, index) in swipeItems"
-          :key="index"
-          :class="[
-            { 'my-swipe-indicator-marker-selected': curIndex == index },
-            'my-swipe-indicator-marker',
-          ]"
-        ></div>
-      </div>
-    </div> -->
+      </my-menu>
       <my-swipe :initialSwipe="12" :width="300" :height="220" :vertical="true" :lazyRender="true" ref="myswipe">
         <my-swipe-item
           v-for="(item, swipeIndex) in swipeItems"
@@ -69,18 +37,19 @@
           :style="{
             'background-color': lightColorGen(50),
           }"
-          >swipe{{ swipeIndex }}</my-swipe-item
+          v-text="'swipe'+swipeIndex"
+          ></my-swipe-item
         >
       </my-swipe>
-      <button class="my-round-button" @click="showColor = !showColor">
-        不满意，换一个
-      </button>
-
       <button @click="myswipe.prev()" class="my-test-button">上一个</button>
       <button @click="myswipe.next()" class="my-test-button">下一个</button>
       <input v-model="page" type="number" class="my-test-button" />
       <button @click="myswipe.swipeTo(page)" class="my-test-button">
         跳转
+      </button> 
+      
+      <button class="my-round-button" @click="showColor = !showColor">
+        不满意，换一个
       </button>
       <div>
         <my-icon
@@ -96,7 +65,11 @@
         @click="isRandomColor = !isRandomColor"
       ></my-switch>
       <div style="height: 50px"></div
-    ></my-pull-refresh>
+    ></my-pull-refresh> -->
+    <my-picker
+      :title="'标题'"
+      :columns="['杭州', '宁波', '温州', '绍兴', '湖州', '嘉兴', '金华', '衢州']"
+    ></my-picker>
     <my-tabbar fixed placeholder safe-area-inset-bottom @change="change">
       <my-tabbar-item icon="user-circle">测试1</my-tabbar-item>
       <my-tabbar-item icon="user-circle-o" dot>测试2</my-tabbar-item>
@@ -113,10 +86,11 @@
             'background-image': item.backImage,
           }"
         >
-          <span v-if="item.icon != null && item.icon != ''">{{
-            item.icon
-          }}</span
-          ><span>{{ item.name }}</span>
+          <span
+            v-if="item.icon != null && item.icon != ''"
+            v-text="item.icon"
+          ></span
+          ><span v-text="item.name"></span>
         </button>
       </div>
     </my-overlay>
@@ -137,6 +111,7 @@ import {
   MyMenuItem,
   MyPullRefresh,
   MySwipeItem,
+  MyPicker,
 } from "../components";
 @Component({
   components: {
@@ -151,6 +126,7 @@ import {
     "my-menu-item": MyMenuItem,
     "my-pull-refresh": MyPullRefresh,
     "my-swipe-item": MySwipeItem,
+    "my-picker": MyPicker,
   },
 })
 export default class Home extends Vue {

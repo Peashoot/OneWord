@@ -33,6 +33,12 @@ export default class MySwipeItem extends Vue {
    * 创建时根据父节点判断是否渲染
    */
   created() {
+    this.decideShow();
+  }
+  /**
+   * 决定是否显示
+   */
+  decideShow() {
     if (this.$parent as MySwipe) {
       const parent = this.$parent as MySwipe;
       if (parent.lazyRender) {

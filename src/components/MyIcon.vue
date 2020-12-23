@@ -14,9 +14,11 @@
     ></my-tag>
     <img class="my-icon-image" v-if="isImage(name)" :src="name" />
     <div class="my-icon-dot my-icon-info" v-if="dot"></div>
-    <div class="my-icon-badge my-icon-info" v-if="badge && badge != ''">
-      {{ badge }}
-    </div>
+    <div
+      class="my-icon-badge my-icon-info"
+      v-if="badge && badge != ''"
+      v-text="badge"
+    ></div>
   </div>
 </template>
 
@@ -67,7 +69,7 @@ export default class MyIcon extends Vue {
   /**
    * 点击图标时触发
    */
-  @Emit()// eslint-disable-next-line
+  @Emit() // eslint-disable-next-line
   click(event: MouseEvent) {
     //TODO: click
   }

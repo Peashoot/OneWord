@@ -26,3 +26,5 @@ export { default as MyImage }
     from './MyImage.vue'
 export { default as MyPullRefresh }
     from './MyPullRefresh.vue'
+export { default as MyPicker }
+    from './MyPicker.vue'
