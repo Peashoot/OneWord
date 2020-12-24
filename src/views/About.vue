@@ -14,7 +14,7 @@
         <span class="my-setting-icon"></span>
       </template>
     </my-navbar>
-    <my-image src="//api.mtyqx.cn/tapi/random.php" alt="愿得一人心" class="my-logo" width=320 height=320 fit="scale-down" round />
+    <my-image src="//api.mtyqx.cn/tapi/random.php" alt="愿得一人心" class="my-logo" width=320 height=320 fit="scale-down" lazy-load round />
 
     <!-- <my-pull-refresh
       v-model="tmpLoading"

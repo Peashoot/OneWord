@@ -9,6 +9,19 @@
     }"
   >
     <img
+      v-if="lazyLoad"
+      ref="img"
+      class="my-image-inside"
+      v-show="loaded"
+      v-lazy="src"
+      :alt="alt"
+      @loadstart="imgStyle = {}"
+      @load="load($event)"
+      @error="error"
+      :style="imgStyle"
+    />
+    <img
+      v-else
       ref="img"
       class="my-image-inside"
       v-show="loaded"
