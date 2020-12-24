@@ -39,6 +39,7 @@ import {
   Emit,
   Watch,
 } from "vue-property-decorator";
+import * as Common from "./common";
 @Component
 export default class MyPickerOption extends Vue {
   /**
@@ -144,11 +145,7 @@ export default class MyPickerOption extends Vue {
    * 获取item高度
    */
   get itemHeightString() {
-    try {
-      return parseInt(this.itemHeight.toString()) + "px";
-    } catch (error) {
-      return this.itemHeight.toString();
-    }
+    return Common.getSizeString(this.itemHeight);
   }
   /**
    * 获取item实际的高度

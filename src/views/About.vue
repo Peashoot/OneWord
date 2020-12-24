@@ -14,7 +14,7 @@
         <span class="my-setting-icon"></span>
       </template>
     </my-navbar>
-    <!-- <img src="//api.mtyqx.cn/tapi/random.php" alt="愿得一人心" class="my-logo"> -->
+    <my-image src="//api.mtyqx.cn/tapi/random.php" alt="愿得一人心" class="my-logo" width=320 height=320 fit="scale-down" round />
 
     <!-- <my-pull-refresh
       v-model="tmpLoading"
@@ -65,7 +65,7 @@
         @click="isRandomColor = !isRandomColor"
       ></my-switch>
       <div style="height: 50px"></div
-    ></my-pull-refresh> -->
+    ></my-pull-refresh>
     <my-picker
       ref="mypicker"
       :title="'标题'"
@@ -98,7 +98,7 @@
           ],
         },
       ]"
-    ></my-picker>
+    ></my-picker> -->
     <my-tabbar fixed placeholder safe-area-inset-bottom @change="change">
       <my-tabbar-item icon="user-circle">测试1</my-tabbar-item>
       <my-tabbar-item icon="user-circle-o" dot>测试2</my-tabbar-item>
@@ -141,6 +141,7 @@ import {
   MyPullRefresh,
   MySwipeItem,
   MyPicker,
+  MyImage,
 } from "../components";
 @Component({
   components: {
@@ -156,6 +157,7 @@ import {
     "my-pull-refresh": MyPullRefresh,
     "my-swipe-item": MySwipeItem,
     "my-picker": MyPicker,
+    "my-image": MyImage,
   },
 })
 export default class Home extends Vue {
