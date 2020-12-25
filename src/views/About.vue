@@ -1,21 +1,147 @@
 <template>
   <div class="about">
     <my-navbar
-      left-text="返回"
-      title="标题"
+      title="Field"
       @left-click="toHomePage"
       left-arrow
       placeholder
+      :border="false"
       fixed
-      border
       safe-area-inset-top
     >
-      <template #right>
+      <!-- <template #right>
         <span class="my-setting-icon"></span>
-      </template>
+      </template> -->
     </my-navbar>
-    <my-image src="//api.mtyqx.cn/tapi/random.php" alt="愿得一人心" class="my-logo" width=320 height=320 fit="scale-down" lazy-load round />
-
+    <!-- <my-image
+      src="//api.mtyqx.cn/tapi/random.php"
+      alt="愿得一人心"
+      class="my-logo"
+      width="320"
+      height="320"
+      fit="scale-down"
+      lazy-load
+      round
+    /> -->
+    <h2 style="padding-top: 20px" class="van-doc-demo-block__title">
+      基础用法
+    </h2>
+    <my-field label="文本" placeholder="请输入文本"></my-field>
+    <h2 class="van-doc-demo-block__title">自定义类型</h2>
+    <my-field label="文本" placeholder="请输入文本" class="van-cell"></my-field>
+    <my-field
+      label="手机号"
+      placeholder="请输入手机号"
+      type="tel"
+      class="van-cell"
+    ></my-field>
+    <my-field
+      label="整数"
+      placeholder="请输入整数"
+      type="digit"
+      class="van-cell"
+    ></my-field>
+    <my-field
+      label="数字"
+      placeholder="请输入数字（支持小数）"
+      type="number"
+      class="van-cell"
+    ></my-field>
+    <my-field
+      label="密码"
+      placeholder="请输入密码"
+      type="password"
+      class="van-cell"
+    ></my-field>
+    <h2 class="van-doc-demo-block__title">禁用输入框</h2>
+    <my-field
+      label="文本"
+      value="输入框只读"
+      class="van-cell"
+      readonly
+    ></my-field>
+    <my-field
+      label="文本"
+      value="输入框已禁用"
+      class="van-cell"
+      disabled
+    ></my-field>
+    <h2 class="van-doc-demo-block__title">显示图标</h2>
+    <my-field
+      label="文本"
+      placeholder="显示图标"
+      class="van-cell"
+      left-icon="smile-o"
+      right-icon="exclamation-circle"
+    ></my-field>
+    <my-field
+      label="文本"
+      value="123"
+      class="van-cell"
+      left-icon="music"
+    ></my-field>
+    <h2 class="van-doc-demo-block__title">错误提示</h2>
+    <my-field
+      label="用户名"
+      placeholder="请输入用户名"
+      class="van-cell"
+      required
+      error
+    ></my-field>
+    <my-field
+      label="手机号"
+      placeholder="请输入手机号"
+      value="123"
+      error-message="手机号格式错误"
+      class="van-cell"
+      required
+    ></my-field>
+    <h2 class="van-doc-demo-block__title">插入按钮</h2>
+    <my-field
+      label="短信验证码"
+      placeholder="请输入短信验证码"
+      class="van-cell"
+      style="align-items: center"
+    >
+      <template #button
+        ><button
+          style="flex: none; height: 32px; padding: 0 8px; font-size: 12px"
+        >
+          发送验证码
+        </button></template
+      >
+    </my-field>
+    <h2 class="van-doc-demo-block__title">格式化输入内容</h2>
+    <my-field
+      label="文本"
+      placeholder="在输入时执行格式化"
+      :formatter="fieldFormatter"
+      class="van-cell"
+    ></my-field>
+    <my-field
+      label="文本"
+      placeholder="在输入时执行格式化"
+      format-trigger="onblur"
+      :formatter="fieldFormatter"
+      class="van-cell"
+    ></my-field>
+    <h2 class="van-doc-demo-block__title">高度自适应</h2>
+    <my-field label="留言" placeholder="请输入留言" type="textarea" autosize></my-field>
+    <h2 class="van-doc-demo-block__title">显示字数统计</h2>
+    <my-field
+      label="留言"
+      placeholder="请输入留言"
+      type="textarea"
+      show-word-limit
+      maxlength=50
+    ></my-field>
+    <h2 class="van-doc-demo-block__title">输入框内容右对齐</h2>
+    <my-field
+      label="文本"
+      placeholder="输入框内容右对齐"
+      input-align="right"
+    ></my-field>
+    <div class="van-doc-demo-section"></div>
     <!-- <my-pull-refresh
       v-model="tmpLoading"
       @refresh="refreshSleep(2000)"
@@ -99,7 +225,7 @@
         },
       ]"
     ></my-picker> -->
-    <my-tabbar fixed placeholder safe-area-inset-bottom @change="change">
+    <!-- <my-tabbar fixed placeholder safe-area-inset-bottom @change="change">
       <my-tabbar-item icon="user-circle">测试1</my-tabbar-item>
       <my-tabbar-item icon="user-circle-o" dot>测试2</my-tabbar-item>
       <my-tabbar-item icon="user-o" badge="2">测试3</my-tabbar-item>
@@ -122,7 +248,7 @@
           ><span v-text="item.name"></span>
         </button>
       </div>
-    </my-overlay>
+    </my-overlay> -->
   </div>
 </template>
 
@@ -142,6 +268,7 @@ import {
   MySwipeItem,
   MyPicker,
   MyImage,
+  MyField,
 } from "../components";
 @Component({
   components: {
@@ -158,6 +285,7 @@ import {
     "my-swipe-item": MySwipeItem,
     "my-picker": MyPicker,
     "my-image": MyImage,
+    "my-field": MyField,
   },
 })
 export default class Home extends Vue {
@@ -223,6 +351,9 @@ export default class Home extends Vue {
   print(obj: any) {
     console.log(obj);
   }
+  fieldFormatter(input: string) {
+    return input?.replace(/\d/gi, "");
+  }
 }
 
 interface MenuItem {
@@ -263,6 +394,7 @@ interface TabbarItem {
 <style scoped>
 .about {
   line-height: 0;
+  background-color: #f7f8fa;
 }
 .my-setting-icon::after {
   content: "\e63f";
@@ -293,5 +425,31 @@ interface TabbarItem {
 }
 .my-test-button {
   line-height: normal;
+}
+.van-doc-demo-block__title {
+  margin: 0;
+  padding: 32px 16px 16px;
+  color: rgba(69, 90, 100, 0.6);
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 16px;
+  text-align: left;
+}
+.van-cell::after {
+  position: absolute;
+  box-sizing: border-box;
+  content: " ";
+  pointer-events: none;
+  right: 16px;
+  bottom: 0;
+  left: 16px;
+  border-bottom: 1px solid #ebedf0;
+  -webkit-transform: scaleY(0.5);
+  transform: scaleY(0.5);
+}
+.van-doc-demo-section {
+  box-sizing: border-box;
+  min-height: 30px;
+  padding-bottom: 20px;
 }
 </style>

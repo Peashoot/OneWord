@@ -5,26 +5,81 @@
         v-if="leftIcon"
         :name="leftIcon"
         :class-prefix="iconPrefix"
+        style="margin-right: 0.5rem"
       ></my-icon
     ></slot>
-    <slot name="label"><label v-text="label"></label></slot>
+    <slot name="label"
+      ><label
+        v-text="label"
+        :class="[
+          'my-field-label',
+          labelClass,
+          { 'my-field-disabled': disabled },
+          { 'my-field-required': required },
+        ]"
+        :style="{ width: getSizeString(labelWidth), 'text-align': labelAlign }"
+      ></label
+    ></slot>
     <slot
-      ><input
-        v-model="value"
-        :name="name"
-        :type="type"
-        :pattern="pattern"
-        :disabled="disabled"
-        :required="required"
-        :maxlength="maxlength"
-        :readonly="readonly"
-        :placeholder="placeholder"
-    /></slot>
+      ><div class="my-field-input-area">
+        <textarea
+          v-if="type == 'textarea'"
+          v-model="inner"
+          :name="name"
+          :type="type"
+          :disabled="disabled"
+          :maxlength="maxlength"
+          :readonly="readonly"
+          :placeholder="placeholder"
+          :class="[
+            'my-field-input',
+            { 'my-field-disabled': disabled },
+            { 'my-field-input-error': error },
+          ]"
+          :style="{
+            'text-align': inputAlign,
+          }"
+          @input="textareaChange($event)"
+          @blur="inputBlur"
+          row="1"
+        />
+        <input
+          v-else
+          v-model="inner"
+          :name="name"
+          :type="type"
+          :disabled="disabled"
+          :maxlength="maxlength"
+          :readonly="readonly"
+          :placeholder="placeholder"
+          :class="[
+            'my-field-input',
+            { 'my-field-disabled': disabled },
+            { 'my-field-input-error': error },
+          ]"
+          :style="{
+            'text-align': inputAlign,
+          }"
+          @input="inputChange($event)"
+          @blur="inputBlur"
+        />
+        <div
+          class="my-field-error-message"
+          v-if="errorMessage"
+          v-text="errorMessage"
+        ></div>
+        <div
+          class="my-field-word-statistics"
+          v-if="showWordLimit && maxlength"
+          v-text="wordStatistic + '/' + maxlength"
+        ></div></div
+    ></slot>
     <slot name="right-icon"
       ><my-icon
         v-if="rightIcon"
         :name="rightIcon"
         :class-prefix="iconPrefix"
+        style="margin-right: -0.5rem; padding: 0 0.5rem"
       ></my-icon
     ></slot>
     <slot name="button"></slot>
@@ -33,9 +88,17 @@
 </template>
 
 <script lang="ts">
-import { Component, Vue, Prop, Model, Emit } from "vue-property-decorator";
+import {
+  Component,
+  Vue,
+  Prop,
+  Model,
+  Emit,
+  Watch,
+} from "vue-property-decorator";
 import { Rule } from "./rule";
 import MyIcon from "./MyIcon.vue";
+import * as Common from "./common";
 @Component({
   components: {
     "my-icon": MyIcon,
@@ -47,6 +110,10 @@ export default class MyField extends Vue {
    */
   @Model("input", { type: [Number, String] })
   value!: number | string;
+  /**
+   * 内部value
+   */
+  inner: number | string = "";
   /**
    * 输入框左侧文本
    */
@@ -155,7 +222,7 @@ export default class MyField extends Vue {
   /**
    * 格式化函数触发的时机，可选值为 onBlur
    */
-  @Prop()
+  @Prop({ default: "onChange" })
   formatTrigger!: string;
   /**
    * 箭头方向，可选值为 left up down
@@ -170,7 +237,7 @@ export default class MyField extends Vue {
   /**
    * 左侧文本宽度，默认单位为px
    */
-  @Prop({ type: [Number, String], default: "6.2em" })
+  @Prop({ type: [Number, String], default: "5.4rem" })
   labelWidth!: number | string;
   /**
    * 左侧文本对齐方式，可选值为 center right
@@ -212,8 +279,148 @@ export default class MyField extends Vue {
    */
   @Prop({ type: Array })
   rules!: Rule[];
+  /**
+   * 通知父级value变化
+   */
+  @Emit() // eslint-disable-next-line
+  input(value: number | string) {
+    // TODO:
+  }
+  /**
+   * 字数统计
+   */
+  wordStatistic = 0;
+  /**
+   * 父级传入value时，修改内部value
+   */
+  @Watch("value", { immediate: true })
+  onValueChanged(newVal: number | string) {
+    this.inner = newVal;
+  }
+  /**
+   * 内部value改变时通知父级
+   */
+  @Watch("inner")
+  onInnerChanged(newVal: number | string) {
+    this.wordStatistic = newVal?.toString()?.length ?? 0;
+    if (newVal != this.value) {
+      this.input(newVal);
+    }
+  }
+  /**
+   * 获取长度等大小的字符串形式，单位默认为px
+   */
+  getSizeString = Common.getSizeString;
+  /**
+   * textarea内容变更时触发formatter
+   */
+  textareaChange(event: Event) {
+    this.inputKeyUp(event);
+    this.inputChange(event);
+  }
+  /**
+   * input内容变更时触发formatter
+   */
+  inputChange(event: Event) {
+    if (
+      (this.formatTrigger && this.formatTrigger.toLowerCase() == "onblur") ||
+      !this.formatter
+    ) {
+      return;
+    }
+    this.inner = this.formatter.call(this, this.inner);
+  }
+  /**
+   * input失去焦点时触发formatter
+   */
+  inputBlur() {
+    if (!this.formatter) {
+      return;
+    }
+    if (this.formatTrigger && this.formatTrigger.toLowerCase() == "onblur") {
+      this.inner = this.formatter.call(this, this.inner);
+    }
+  }
+  /**
+   * 当按键按下后，textarea自适应高度
+   */
+  inputKeyUp(event: Event) {
+    if (typeof this.autosize === "boolean") {
+      if (this.autosize) {
+        const inputElement = event.target as HTMLElement;
+        inputElement.style.height = "inherit";
+        inputElement.style.height = `${inputElement.scrollHeight}px`;
+      }
+    } else {
+      // TODO:
+    }
+  }
 }
 </script>
 
 <style scoped>
+.my-field {
+  line-height: normal;
+  width: 100%;
+  display: flex;
+  padding: 0.6125rem 1rem;
+  overflow: hidden;
+  box-sizing: border-box;
+  font-size: 1rem;
+  background-color: #fff;
+  color: #646566;
+  flex: 1;
+  -webkit-box-flex: 1;
+}
+.my-field-label {
+  display: flex;
+  flex: none;
+  -webkit-box-flex: 0;
+  margin-right: 0.75rem;
+}
+.my-field-required::before {
+  content: "*";
+  color: #ee0a24;
+  position: absolute;
+  left: 0.5rem;
+}
+.my-field-disabled {
+  color: #c8c9cc;
+}
+.my-field-input-area {
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  flex: 1;
+  -webkit-box-flex: 1;
+}
+.my-field-input {
+  border: 0;
+  box-sizing: border-box;
+  width: 100%;
+  resize: none;
+  overflow: hidden;
+}
+.my-field-input[disabled] {
+  background-color: inherit;
+}
+.my-field-input::placeholder {
+  color: #c8c9cc;
+}
+.my-field-input-error {
+  color: #ee0a24;
+}
+.my-field-input-error::placeholder {
+  color: #ee0a24;
+}
+.my-field-error-message {
+  color: #ee0a24;
+  font-size: 0.75rem;
+  text-align: left;
+  padding: 0.06125rem 0.125rem;
+}
+.my-field-word-statistics {
+  width: 100%;
+  text-align: right;
+}
 </style>

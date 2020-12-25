@@ -28,3 +28,5 @@ export { default as MyPullRefresh }
     from './MyPullRefresh.vue'
 export { default as MyPicker }
     from './MyPicker.vue'
+export { default as MyField }
+    from './MyField.vue'

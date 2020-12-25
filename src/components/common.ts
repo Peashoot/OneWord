@@ -4,8 +4,11 @@
  */
 export function getSizeString(value: number | string): string {
     try {
-        return parseInt(value.toString()) + "px";
+        if (/^\d+$/.test(value.toString())) {
+            return parseInt(value.toString()) + "px";
+        }
     } catch {
-        return value.toString();
+        // TODO: 
     }
+    return value.toString();
 }
