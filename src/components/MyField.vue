@@ -1,5 +1,8 @@
 <template>
-  <div class="my-field">
+  <div
+    class="my-field"
+    :style="{ 'font-size': size === 'large' ? '1rem' : '0.8rem' }"
+  >
     <slot name="left-icon"
       ><my-icon
         v-if="leftIcon"
@@ -16,6 +19,7 @@
           labelClass,
           { 'my-field-disabled': disabled },
           { 'my-field-required': required },
+          { 'my-field-label-colon': colon },
         ]"
         :style="{ width: getSizeString(labelWidth), 'text-align': labelAlign }"
       ></label
@@ -272,7 +276,7 @@ export default class MyField extends Vue {
   /**
    * 图标类名前缀，同 Icon 组件的 class-prefix 属性
    */
-  @Prop({ default: "fa" })
+  @Prop({ default: "icofont" })
   iconPrefix!: string;
   /**
    * 表单校验规则
@@ -366,7 +370,6 @@ export default class MyField extends Vue {
   padding: 0.6125rem 1rem;
   overflow: hidden;
   box-sizing: border-box;
-  font-size: 1rem;
   background-color: #fff;
   color: #646566;
   flex: 1;
@@ -422,5 +425,10 @@ export default class MyField extends Vue {
 .my-field-word-statistics {
   width: 100%;
   text-align: right;
+}
+.my-field-label-colon::after {
+  content: ":";
+  display: flex;
+  align-items: center;
 }
 </style>

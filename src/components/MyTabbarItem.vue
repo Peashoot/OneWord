@@ -41,7 +41,7 @@ export default class MyTabbarItem extends Vue {
   /**
    * 图标类名前缀
    */
-  @Prop({ default: "fa" })
+  @Prop({ default: "icofont" })
   iconPrefix!: string;
   /**
    * 是否显示图标右上角小红点

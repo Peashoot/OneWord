@@ -59,7 +59,7 @@ export default class MyIcon extends Vue {
   /**
    * 类名前缀，用于使用自定义图标
    */
-  @Prop({ default: "fa" })
+  @Prop({ default: "icofont" })
   "class-prefix"!: string;
   /**
    * HTML 标签
@@ -100,7 +100,7 @@ interface InnerIcon {
 </script>
 
 <style>
-@import "../assets/css/font-awesome.min.css";
+@import "../assets/css/icofont.css";
 .my-icon {
   line-height: normal;
   position: relative;

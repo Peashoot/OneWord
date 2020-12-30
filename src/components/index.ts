@@ -30,3 +30,5 @@ export { default as MyPicker }
     from './MyPicker.vue'
 export { default as MyField }
     from './MyField.vue'
+export { default as MyActionSheet }
+    from './MyActionSheet.vue'

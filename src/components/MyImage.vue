@@ -119,7 +119,7 @@ export default class MyImage extends Vue {
   /**
    * 图标类名前缀
    */
-  @Prop({ default: "fa" })
+  @Prop({ default: "icofont" })
   iconPrefix!: string;
   /**
    * img标签
