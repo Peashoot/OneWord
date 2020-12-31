@@ -194,14 +194,14 @@ export default class MyActionSheet extends Vue {
   /**
    * 通知value变化给父级
    */
-  @Emit()
+  @Emit() // eslint-disable-next-line
   input(val: boolean) {
     // TODO:
   }
   /**
    * 点击选项时触发，禁用或加载状态下不会触发
    */
-  @Emit()
+  @Emit() // eslint-disable-next-line
   select(action: Action, index: number) {
     // TODO:
     if (this.closeOnClickAction) {
@@ -273,7 +273,7 @@ interface Action {
   /**
    * 为对应列添加额外的class
    */
-  className?: any;
+  className?: string | object;
   /**
    * 是否为加载状态
    */

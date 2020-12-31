@@ -1,5 +1,5 @@
 <script lang="ts">
-import { CreateElement, VNode, VueConstructor } from "vue";
+import { CreateElement, VNode } from "vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
 import MyOverlay from "./MyOverlay.vue";
 @Component({

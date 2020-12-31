@@ -13,7 +13,8 @@
         <span class="my-setting-icon"></span>
       </template> -->
     </my-navbar>
-    <my-action-sheet
+    <my-toast message="提示内容" v-model="isRandomColor"></my-toast>
+    <!-- <my-action-sheet
       v-model="showActionSheet"
       title="标题"
       description="这是一段描述信息"
@@ -27,8 +28,8 @@
       :safeAreaInsetBottom="false"
       @select="print('abc')"
     >
-    </my-action-sheet>
-    <button class="my-test-button" @click="showActionSheet = true">显示</button>
+    </my-action-sheet>-->
+    <button class="my-test-button" @click="print('abc')">显示</button> 
     <!-- <my-image
       src="//api.mtyqx.cn/tapi/random.php"
       alt="愿得一人心"
@@ -153,45 +154,46 @@
 <script lang="ts">
 import { Component, Ref, Vue } from "vue-property-decorator";
 import {
-  MySwitch,
-  MySwipe,
-  MyNavbar,
-  MyTabbar,
-  MyTabbarItem,
-  MyIcon,
-  MyOverlay,
-  MyMenu,
-  MyMenuItem,
-  MyPullRefresh,
-  MySwipeItem,
-  MyPicker,
-  MyImage,
-  MyField,
-  MyActionSheet,
+  Switch,
+  Swipe,
+  NavBar,
+  Tabbar,
+  TabbarItem,
+  Icon,
+  Overlay,
+  Menu,
+  MenuItem,
+  PullRefresh,
+  SwipeItem,
+  Picker,
+  Image,
+  Field,
+  ActionSheet,
+  Toast,
 } from "../components";
-import { Field } from "vant";
 @Component({
   components: {
-    "my-switch": MySwitch,
-    "my-swipe": MySwipe,
-    "my-navbar": MyNavbar,
-    "my-tabbar": MyTabbar,
-    "my-tabbar-item": MyTabbarItem,
-    "my-icon": MyIcon,
-    "my-overlay": MyOverlay,
-    "my-menu": MyMenu,
-    "my-menu-item": MyMenuItem,
-    "my-pull-refresh": MyPullRefresh,
-    "my-swipe-item": MySwipeItem,
-    "my-picker": MyPicker,
-    "my-image": MyImage,
-    "my-field": MyField,
-    "my-action-sheet": MyActionSheet,
+    "my-switch": Switch,
+    "my-swipe": Swipe,
+    "my-navbar": NavBar,
+    "my-tabbar": Tabbar,
+    "my-tabbar-item": TabbarItem,
+    "my-icon": Icon,
+    "my-overlay": Overlay,
+    "my-menu": Menu,
+    "my-menu-item": MenuItem,
+    "my-pull-refresh": PullRefresh,
+    "my-swipe-item": SwipeItem,
+    "my-picker": Picker,
+    "my-image": Image,
+    "my-field": Field,
+    "my-action-sheet": ActionSheet,
+    "my-toast": Toast,
   },
 })
 export default class Home extends Vue {
-  menuItems = new Array<MenuItem>();
-  tabbarItems = new Array<TabbarItem>();
+  menuItems = new Array<MenuItemValue>();
+  tabbarItems = new Array<TabbarItemValue>();
   swipeItems = new Array<string>();
   curIndex = 0;
   isRandomColor = true;
@@ -199,9 +201,9 @@ export default class Home extends Vue {
   showColor = false;
   switchWidth = 40;
   @Ref()
-  myswipe!: MySwipe;
+  myswipe!: Swipe;
   @Ref()
-  mypicker!: MyPicker;
+  mypicker!: Picker;
   page = 0;
   isMobile = false;
   mounted() {
@@ -258,7 +260,7 @@ export default class Home extends Vue {
   }
 }
 
-interface MenuItem {
+interface MenuItemValue {
   /**
    * 图标
    */
@@ -277,7 +279,7 @@ interface MenuItem {
   link?: string;
 }
 
-interface TabbarItem {
+interface TabbarItemValue {
   /**
    * 图标
    */
