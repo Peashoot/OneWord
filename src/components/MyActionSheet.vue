@@ -1,18 +1,100 @@
 <template>
   <div class="my-action-sheet">
-    <div class="my-action-sheet-view">
-      <slot name="description"><div class="my-action-sheet-description" v-text="description"></div></slot>
-      <slot></slot>
-    </div>
+    <my-tag
+      :tag="overlay ? 'my-overlay' : 'div'"
+      :show="value"
+      :duration="duration"
+      :lock-scroll="lockScroll"
+      @click="overlay && clickOverlay()"
+    >
+      <div
+        :class="[
+          'my-action-sheet-view',
+          { 'my-action-sheet-view-round': round },
+        ]"
+        :style="{
+          'transition-duration': duration + 's',
+        }"
+        ref="view"
+      >
+        <div v-if="title" class="my-action-sheet-head">
+          <div class="my-action-sheet-title" v-text="title"></div>
+          <my-icon
+            v-if="closeable"
+            :name="closeIcon"
+            class="my-action-sheet-close"
+            @click="close()"
+          ></my-icon>
+        </div>
+        <slot name="description"
+          ><div class="my-action-sheet-description" v-text="description"></div
+        ></slot>
+        <slot
+          ><div
+            v-for="(item, index) in actions"
+            :key="index"
+            :style="{
+              color: !item.color
+                ? item.disabled
+                  ? '#c8c9cc'
+                  : '#000'
+                : item.color,
+            }"
+            @click="item.disabled || item.loading || select(item, index)"
+            :class="[
+              'my-action-sheet-action',
+              item.class,
+              { 'my-action-sheet-loading': item.loading },
+            ]"
+          >
+            <div
+              class="my-action-sheet-action-item"
+              v-text="item.name"
+              v-if="!item.loading"
+            ></div>
+            <div
+              v-if="item.subname && !item.loading"
+              class="my-action-sheet-action-item my-action-sheet-action-desc"
+              v-text="item.subname"
+            ></div>
+            <div v-if="item.loading" class="my-action-sheet-action-item">
+              <my-icon name="spinner"></my-icon>
+            </div>
+          </div>
+          <div class="my-action-sheet-cancel" v-if="cancelText">
+            <div class="my-action-sheet-cancel-gap"></div>
+            <div
+              class="my-action-sheet-action"
+              v-text="cancelText"
+              @click="cancel"
+            ></div></div
+        ></slot>
+        <div
+          class="my-action-sheet-safe-area"
+          v-if="safeAreaInsetBottom"
+        ></div></div
+    ></my-tag>
   </div>
 </template>
 
 <script lang="ts">
-import { Component, Prop, Vue, Model, Emit } from "vue-property-decorator";
+import {
+  Component,
+  Prop,
+  Vue,
+  Model,
+  Emit,
+  Ref,
+  Watch,
+} from "vue-property-decorator";
 import MyOverlay from "./MyOverlay.vue";
+import MyIcon from "./MyIcon.vue";
+import MyTag from "./MyTag.vue";
 @Component({
   components: {
     "my-overlay": MyOverlay,
+    "my-icon": MyIcon,
+    "my-tag": MyTag,
   },
 })
 export default class MyActionSheet extends Vue {
@@ -24,7 +106,7 @@ export default class MyActionSheet extends Vue {
   /**
    * 面板选项列表
    */
-  @Prop({ type: Array, default: [] })
+  @Prop({ type: Array, default: () => [] })
   actions!: Action[];
   /**
    * 顶部标题
@@ -49,7 +131,7 @@ export default class MyActionSheet extends Vue {
   /**
    * 关闭图标名称或图片链接
    */
-  @Prop({ default: "cross" })
+  @Prop({ default: "close" })
   closeIcon!: string;
   /**
    * 动画时长，单位秒
@@ -72,16 +154,6 @@ export default class MyActionSheet extends Vue {
   @Prop({ type: Boolean, default: true })
   lockScroll!: boolean;
   /**
-   * 是否在显示弹层时才渲染节点
-   */
-  @Prop({ type: Boolean, default: true })
-  lazyRender!: boolean;
-  /**
-   * 是否在页面回退时自动关闭
-   */
-  @Prop({ type: Boolean })
-  closeOnPopstate!: boolean;
-  /**
    * 是否在点击选项后关闭
    */
   @Prop({ type: Boolean })
@@ -97,10 +169,28 @@ export default class MyActionSheet extends Vue {
   @Prop({ type: Boolean, default: true })
   safeAreaInsetBottom!: boolean;
   /**
-   * 指定挂载的节点，用法示例
+   * 可见视图组件
    */
-  @Prop({ type: [String, Function] })
-  getContainer!: string | LoadElement;
+  @Ref()
+  view!: HTMLDivElement;
+  @Watch("value", { immediate: true })
+  onValueChanged(newVal: boolean, oldVal: boolean) {
+    if (newVal && !oldVal) {
+      this.open();
+      setTimeout(() => (this.view.style.transform = "translateY(-100%)"), 1);
+      setTimeout(
+        () => this.opened(),
+        parseFloat(this.duration.toString()) * 1000
+      );
+    }
+    if (!newVal && oldVal) {
+      this.view.style.removeProperty("transform");
+      setTimeout(
+        () => this.closed(),
+        parseFloat(this.duration.toString()) * 1000
+      );
+    }
+  }
   /**
    * 通知value变化给父级
    */
@@ -114,6 +204,9 @@ export default class MyActionSheet extends Vue {
   @Emit()
   select(action: Action, index: number) {
     // TODO:
+    if (this.closeOnClickAction) {
+      this.close();
+    }
   }
   /**
    * 点击取消按钮时触发
@@ -121,6 +214,7 @@ export default class MyActionSheet extends Vue {
   @Emit()
   cancel() {
     // TODO:
+    this.close();
   }
   /**
    * 打开面板时触发
@@ -135,6 +229,7 @@ export default class MyActionSheet extends Vue {
   @Emit()
   close() {
     // TODO:
+    this.input(false);
   }
   /**
    * 打开面板且动画结束后触发
@@ -156,6 +251,9 @@ export default class MyActionSheet extends Vue {
   @Emit()
   clickOverlay() {
     // TODO:
+    if (this.closeOnClickOverlay) {
+      this.close();
+    }
   }
 }
 declare type LoadElement = () => Element;
@@ -189,18 +287,79 @@ interface Action {
 
 <style scoped>
 .my-action-sheet {
+  position: absolute;
   line-height: normal;
-  width: 100%;
+  overflow: hidden;
+}
+.my-overlay {
+  overflow: hidden;
 }
 .my-action-sheet-view {
   position: absolute;
-  bottom: 0;
+  width: 100%;
+  top: 100%;
+  background-color: #ffffff;
+  transition-property: transform;
+  -moz-transition-property: transform; /* Firefox 4 */
+  -webkit-transition-property: transform; /* Safari and Chrome */
+  -o-transition-property: transform; /* Opera */
 }
-.my-action-sheet-description {
+.my-action-sheet-view-round {
+  border-top-left-radius: 1em;
+  border-top-right-radius: 1em;
+}
+.my-action-sheet-head {
+  position: relative;
+  width: 100%;
+  height: 3rem;
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 100%;
-  height: 3rem;
+}
+.my-action-sheet-title {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.my-action-sheet-close {
+  position: absolute;
+  right: 1rem;
+}
+.my-action-sheet-description {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.875rem;
+  padding: 0.875rem;
+  opacity: 50%;
+}
+.my-action-sheet-description::after {
+  position: absolute;
+  box-sizing: border-box;
+  content: " ";
+  pointer-events: none;
+  right: 1rem;
+  bottom: 0;
+  left: 1rem;
+  border-bottom: 0.0625rem solid #ebedf0;
+}
+.my-action-sheet-action {
+  display: flex;
+  flex-direction: column;
+  padding: 0.875rem;
+}
+.my-action-sheet-action-desc {
+  padding-top: 0.5rem;
+  font-size: 0.7rem;
+  opacity: 50%;
+}
+.my-action-sheet-cancel-gap {
+  height: 0.5rem;
+  background-color: #f7f8fa;
+}
+.my-action-sheet-safe-area {
+  display: relative;
+  height: 2rem;
 }
 </style>

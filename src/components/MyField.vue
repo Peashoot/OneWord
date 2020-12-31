@@ -26,29 +26,8 @@
     ></slot>
     <slot
       ><div class="my-field-input-area">
-        <textarea
-          v-if="type == 'textarea'"
-          v-model="inner"
-          :name="name"
-          :type="type"
-          :disabled="disabled"
-          :maxlength="maxlength"
-          :readonly="readonly"
-          :placeholder="placeholder"
-          :class="[
-            'my-field-input',
-            { 'my-field-disabled': disabled },
-            { 'my-field-input-error': error },
-          ]"
-          :style="{
-            'text-align': inputAlign,
-          }"
-          @input="textareaChange($event)"
-          @blur="inputBlur"
-          row="1"
-        />
-        <input
-          v-else
+        <my-tag
+          :tag="type == 'textarea' ? 'textarea' : 'input'"
           v-model="inner"
           :name="name"
           :type="type"
@@ -102,10 +81,12 @@ import {
 } from "vue-property-decorator";
 import { Rule } from "./rule";
 import MyIcon from "./MyIcon.vue";
+import MyTag from "./MyTag.vue";
 import * as Common from "./common";
 @Component({
   components: {
     "my-icon": MyIcon,
+    "my-tag": MyTag,
   },
 })
 export default class MyField extends Vue {
@@ -316,16 +297,12 @@ export default class MyField extends Vue {
    */
   getSizeString = Common.getSizeString;
   /**
-   * textarea内容变更时触发formatter
-   */
-  textareaChange(event: Event) {
-    this.inputKeyUp(event);
-    this.inputChange(event);
-  }
-  /**
    * input内容变更时触发formatter
    */
   inputChange(event: Event) {
+    if (this.type == "textarea") {
+      this.inputKeyUp(event);
+    }
     if (
       (this.formatTrigger && this.formatTrigger.toLowerCase() == "onblur") ||
       !this.formatter

@@ -4,6 +4,8 @@ export { default as MyNavbar }
     from './MyNavbar.vue'
 export { default as MyButton }
     from './MyButton.vue'
+export { default as MyFaIcon }
+    from './MyFaIcon.vue'
 export { default as MyIcon }
     from './MyIcon.vue'
 export { default as MySwipe }

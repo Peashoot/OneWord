@@ -42,6 +42,7 @@ export default class MySwitch extends Vue {
   @Emit() // eslint-disable-next-line
   click(event: MouseEvent) {
     // TODO: click
+    this.input(!this.value);
   }
   /**
    * 高度

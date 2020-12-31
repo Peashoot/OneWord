@@ -14,8 +14,9 @@
         classPrefix,
         isImage(name) ? '' : classPrefix + '-' + name,
         {
-          'my-icon-rotate':
-            classPrefix == 'icofont' && name.indexOf('spinner') >= 0,
+          'fa-pulse':
+            classPrefix == 'fa' &&
+            (name == 'spinner' || name == 'circle-o-notch' || name == 'cog' || name == 'refresh '),
         },
       ]"
     ></my-tag>
@@ -66,7 +67,7 @@ export default class MyIcon extends Vue {
   /**
    * 类名前缀，用于使用自定义图标
    */
-  @Prop({ default: "icofont" })
+  @Prop({ default: "fa" })
   classPrefix!: string;
   /**
    * HTML 标签
@@ -107,7 +108,7 @@ interface InnerIcon {
 </script>
 
 <style>
-@import "../assets/css/icofont.css";
+@import "../assets/css/font-awesome.css";
 .my-icon {
   line-height: normal;
   position: relative;
@@ -155,16 +156,5 @@ interface InnerIcon {
 }
 .my-icon-badge::after {
   content: "\00A0";
-}
-.my-icon-rotate {
-  animation: anim-rotate 1s infinite steps(8);
-}
-@keyframes anim-rotate {
-  0% {
-    transform: rotate(0);
-  }
-  100% {
-    transform: rotate(360deg);
-  }
 }
 </style>

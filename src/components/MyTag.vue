@@ -1,7 +1,12 @@
 <script lang="ts">
-import { CreateElement, VNode } from "vue";
+import { CreateElement, VNode, VueConstructor } from "vue";
 import { Component, Prop, Vue } from "vue-property-decorator";
-@Component
+import MyOverlay from "./MyOverlay.vue";
+@Component({
+  components: {
+    "my-overlay": MyOverlay,
+  },
+})
 export default class MyTag extends Vue {
   /**
    * 标签
@@ -12,7 +17,11 @@ export default class MyTag extends Vue {
    * 渲染函数
    */
   render(h: CreateElement): VNode {
-    return h(this.tag, this.$slots.default);
+    return h(
+      this.tag,
+      { props: this.$attrs, on: this.$listeners },
+      this.$slots.default
+    );
   }
 }
 </script>

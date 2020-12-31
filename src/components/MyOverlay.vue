@@ -1,16 +1,18 @@
 <template>
-  <div
-    :class="['my-overlay', className]"
-    @click="click($event)"
-    v-show="show"
-    :style="{
-      'z-index': zIndex,
-      customStyle,
-      'animation-duration': duration + 's',
-    }"
-  >
-    <slot></slot>
-  </div>
+  <transition name="fade" :style="{ 'transition-duration': duration + 's' }">
+    <div
+      :class="['my-overlay', className]"
+      @click="click($event)"
+      v-show="show"
+      :style="{
+        'z-index': zIndex,
+        customStyle,
+        'transition-duration': duration + 's',
+      }"
+    >
+      <slot></slot>
+    </div>
+  </transition>
 </template>
 
 <script lang="ts">
@@ -50,7 +52,7 @@ export default class MyOverlay extends Vue {
   /**
    * 点击时触发
    */
-  @Emit()// eslint-disable-next-line
+  @Emit() // eslint-disable-next-line
   click(event: MouseEvent) {
     // TODO: click
   }
@@ -80,6 +82,16 @@ export default class MyOverlay extends Vue {
   height: 100%;
   background-color: rgba(0, 0, 0, 0.7);
   overflow: auto;
+}
+.fade-enter-active,
+.fade-leave-active {
+  transition-property: opacity;
+  -moz-transition-property: opacity;
+  -webkit-transition-property: opacity; /* Safari and Chrome */
+  -o-transition-property: opacity; /* Opera */
+}
+.fade-enter, .fade-leave-to /* .fade-leave-active below version 2.1.8 */ {
+  opacity: 0;
 }
 </style>
 <style>

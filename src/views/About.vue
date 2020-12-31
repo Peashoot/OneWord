@@ -13,7 +13,22 @@
         <span class="my-setting-icon"></span>
       </template> -->
     </my-navbar>
-    <my-action-sheet description="hello"></my-action-sheet>
+    <my-action-sheet
+      v-model="showActionSheet"
+      title="标题"
+      description="这是一段描述信息"
+      :actions="[
+        { name: '选项一', color: 'red' },
+        { name: '选项二', disabled: true },
+        { name: '选项三', subname: '描述信息' },
+        { name: '选项四', loading: true },
+      ]"
+      cancelText="取消"
+      :safeAreaInsetBottom="false"
+      @select="print('abc')"
+    >
+    </my-action-sheet>
+    <button class="my-test-button" @click="showActionSheet = true">显示</button>
     <!-- <my-image
       src="//api.mtyqx.cn/tapi/random.php"
       alt="愿得一人心"
@@ -24,7 +39,7 @@
       lazy-load
       round
     /> -->
-    
+
     <!-- <my-pull-refresh
       v-model="tmpLoading"
       @refresh="refreshSleep(2000)"
@@ -180,6 +195,7 @@ export default class Home extends Vue {
   swipeItems = new Array<string>();
   curIndex = 0;
   isRandomColor = true;
+  showActionSheet = false;
   showColor = false;
   switchWidth = 40;
   @Ref()
@@ -281,6 +297,7 @@ interface TabbarItem {
 .about {
   line-height: 0;
   background-color: #f7f8fa;
+  min-height: 100vh;
 }
 .my-setting-icon::after {
   content: "\e63f";
