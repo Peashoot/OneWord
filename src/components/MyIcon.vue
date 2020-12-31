@@ -17,6 +17,14 @@
           'my-icon-rotate':
             classPrefix == 'icofont' && name.indexOf('spinner') >= 0,
         },
+        {
+          'fa-pulse':
+            classPrefix == 'fa' &&
+            (name == 'spinner' ||
+              name == 'circle-o-notch' ||
+              name == 'cog' ||
+              name == 'refresh '),
+        },
       ]"
     ></my-tag>
     <img class="my-icon-image" v-if="isImage(name)" :src="name" />
@@ -108,6 +116,7 @@ interface InnerIcon {
 
 <style>
 @import "../assets/css/icofont.css";
+@import "../assets/css/font-awesome.css";
 .my-icon {
   line-height: normal;
   position: relative;
