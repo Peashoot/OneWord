@@ -1,38 +1,40 @@
 <template>
-  <div
-    :class="[
-      'my-toast',
-      {
-        'my-toast-allow-click':
-          !forbidClick && !(overlay && closeOnClickOverlay),
-      },
-      { 'my-toast-overlay': overlay },
-    ]"
-    v-show="value"
-    @click="overlay && closeOnClickOverlay && input(false)"
-  >
+  <transition :name="transition">
     <div
       :class="[
-        'my-toast-view',
-        'my-toast-view-' + position,
-        { 'my-toast-have-icon': realIcon },
+        'my-toast',
+        {
+          'my-toast-allow-click':
+            !forbidClick && !(overlay && closeOnClickOverlay),
+        },
+        { 'my-toast-overlay': overlay },
+        className,
       ]"
-      @click="closeOnClick && input(false)"
+      v-show="value"
+      @click="overlay && closeOnClickOverlay && input(false)"
     >
-      <my-icon
-        v-if="realIcon"
-        :name="realIcon"
-        :class-prefix="iconPrefix"
-        size="3rem"
-      ></my-icon>
       <div
-        v-if="type === 'html'"
-        class="my-toast-message"
-        v-html="message"
-      ></div>
-      <div v-else class="my-toast-message" v-text="message"></div>
-    </div>
-  </div>
+        :class="[
+          'my-toast-view',
+          'my-toast-view-' + position,
+          { 'my-toast-have-icon': realIcon },
+        ]"
+        @click="closeOnClick && input(false)"
+      >
+        <my-icon
+          v-if="realIcon"
+          :name="realIcon"
+          :class-prefix="iconPrefix"
+          size="3rem"
+        ></my-icon>
+        <div
+          v-if="type === 'html'"
+          class="my-toast-message"
+          v-html="message"
+        ></div>
+        <div v-else class="my-toast-message" v-text="message"></div>
+      </div></div
+  ></transition>
 </template>
 <script lang="ts">
 import { Component, Vue, Prop, Model, Emit } from "vue-property-decorator";
@@ -51,7 +53,7 @@ export default class MyToast extends Vue {
   /**
    * 通知父级状态变更
    */
-  @Emit()
+  @Emit() // eslint-disable-next-line
   input(val: boolean) {
     // TODO:
   }
@@ -120,11 +122,6 @@ export default class MyToast extends Vue {
    */
   @Prop({ type: String, default: "circular" })
   loadingType!: string;
-  /**
-   * 展示时长(ms)，值为 0 时，toast 不会消失
-   */
-  @Prop({ type: Number, default: 2000 })
-  duration!: number;
   /**
    * 自定义类名
    */

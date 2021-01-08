@@ -1,3 +1,4 @@
+/* eslint-disable */
 import MyToast from "./MyToast.vue";
 import Vue from "vue";
 /**
@@ -68,7 +69,6 @@ function createInstance(): any {
   if (!queue.length || multiple) {
     const toast = new MyToast();
     toast.$mount(document.createElement("div"));
-    document.body.appendChild(toast.$el);
     queue.push(toast);
   }
   return queue[queue.length - 1];
@@ -88,6 +88,10 @@ export default function Toast(option: string | ToastOption) {
     defaultOptionsMap.get(toastOption.type || currentOptions.type),
     toastOption
   );
+  const parentElement = typeof toastOption.getContainer === 'string' ?
+    document.querySelector(toastOption.getContainer as keyof HTMLElementTagNameMap) :
+    toastOption.getContainer?.call(window);
+  parentElement?.appendChild(toast.$el);
   toastOption.clear = function () {
     toast.value = false;
 
@@ -102,7 +106,7 @@ export default function Toast(option: string | ToastOption) {
         queue = queue.filter(function (item) {
           return item !== toast;
         });
-        window.document.body.removeChild(toast.$el);
+        parentElement?.removeChild(toast.$el);
         toast.$destroy();
       });
     }
@@ -258,4 +262,8 @@ interface ToastOption {
    * 动画类名，等价于 transition 的name属性
    */
   transition?: string;
+  /**
+   * 指定挂载的节点
+   */
+  getContainer?: string | (() => Element);
 }

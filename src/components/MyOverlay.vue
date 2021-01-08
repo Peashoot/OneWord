@@ -94,9 +94,3 @@ export default class MyOverlay extends Vue {
   opacity: 0;
 }
 </style>
-<style>
-.no-scroll {
-  overflow-y: hidden;
-  height: 100vh;
-}
-</style>

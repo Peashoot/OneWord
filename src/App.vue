@@ -32,4 +32,9 @@ html {
 #nav a.router-link-exact-active {
   color: #42b983;
 }
+
+.no-scroll {
+  overflow-y: hidden;
+  height: 100vh;
+}
 </style>

@@ -9,9 +9,9 @@
       fixed
       safe-area-inset-top
     >
-      <!-- <template #right>
+      <template #right>
         <span class="my-setting-icon"></span>
-      </template> -->
+      </template>
     </my-navbar>
     <!-- <my-toast
       message="提示内容"
@@ -34,13 +34,15 @@
     >
     </my-action-sheet>-->
     <button class="my-test-button" @click="toast('message')">toast</button>
-    <button class="my-test-button" @click="loading('loading')">
-      loading
-    </button>
-    <button class="my-test-button" @click="success('success')">
-      success
-    </button>
+    <button class="my-test-button" @click="loading('loading')">loading</button>
+    <button class="my-test-button" @click="success('success')">success</button>
     <button class="my-test-button" @click="fail('fail')">fail</button>
+    <my-dialog
+      v-model="isRandomColor"
+      title="标题"
+      message="代码是写出来给人看的，附带能在机器上运行"
+      show-cancel-button
+    ></my-dialog>
     <!-- <my-image
       src="//api.mtyqx.cn/tapi/random.php"
       alt="愿得一人心"
@@ -164,6 +166,7 @@
 
 <script lang="ts">
 import { Component, Ref, Vue } from "vue-property-decorator";
+import MyDialog from "../components/MyDialog.vue";
 import {
   Switch,
   Swipe,
@@ -199,6 +202,7 @@ import {
     "my-image": Image,
     "my-field": Field,
     "my-action-sheet": ActionSheet,
+    "my-dialog": MyDialog,
   },
 })
 export default class Home extends Vue {
