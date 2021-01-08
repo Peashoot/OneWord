@@ -13,7 +13,11 @@
         <span class="my-setting-icon"></span>
       </template> -->
     </my-navbar>
-    <my-toast message="提示内容" v-model="isRandomColor"></my-toast>
+    <!-- <my-toast
+      message="提示内容"
+      v-model="isRandomColor"
+      type="loading"
+    ></my-toast> -->
     <!-- <my-action-sheet
       v-model="showActionSheet"
       title="标题"
@@ -29,7 +33,14 @@
       @select="print('abc')"
     >
     </my-action-sheet>-->
-    <button class="my-test-button" @click="print('abc')">显示</button> 
+    <button class="my-test-button" @click="toast('message')">toast</button>
+    <button class="my-test-button" @click="loading('loading')">
+      loading
+    </button>
+    <button class="my-test-button" @click="success('success')">
+      success
+    </button>
+    <button class="my-test-button" @click="fail('fail')">fail</button>
     <!-- <my-image
       src="//api.mtyqx.cn/tapi/random.php"
       alt="愿得一人心"
@@ -188,7 +199,6 @@ import {
     "my-image": Image,
     "my-field": Field,
     "my-action-sheet": ActionSheet,
-    "my-toast": Toast,
   },
 })
 export default class Home extends Vue {
@@ -257,6 +267,18 @@ export default class Home extends Vue {
   }
   fieldFormatter(input: string) {
     return input?.replace(/\d/gi, "");
+  }
+  toast(msg: string) {
+    Toast(msg);
+  }
+  loading(msg: string) {
+    Toast.loading(msg);
+  }
+  success(msg: string) {
+    Toast.success(msg);
+  }
+  fail(msg: string) {
+    Toast.fail(msg);
   }
 }
 

@@ -6,7 +6,7 @@ export interface Rule {
     /**
      * 错误提示文案
      */
-    message?: string | ErrorConsturctor;
+    message?: string | ErrorConstructor;
     /**
      * 通过函数进行校验
      */
@@ -24,6 +24,6 @@ export interface Rule {
      */
     formatter?: TextFormatter;
 }
-export type ErrorConsturctor = (value: string, rule: Rule) => string;
+export type ErrorConstructor = (value: string, rule: Rule) => string;
 export type Validator = (value: string, rule: Rule) => boolean | Promise<boolean>;
 export type TextFormatter = (value: string, rule: Rule) => any;

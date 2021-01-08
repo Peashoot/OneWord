@@ -33,4 +33,4 @@ export { default as Field }
 export { default as ActionSheet }
     from './MyActionSheet.vue'
 export { default as Toast }
-    from './MyToast.vue'
+    from "./Toast"

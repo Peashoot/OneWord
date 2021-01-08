@@ -2,20 +2,28 @@
   <div
     :class="[
       'my-toast',
-      { 'my-toast-allow-click': !forbidClick },
+      {
+        'my-toast-allow-click':
+          !forbidClick && !(overlay && closeOnClickOverlay),
+      },
       { 'my-toast-overlay': overlay },
     ]"
     v-show="value"
     @click="overlay && closeOnClickOverlay && input(false)"
   >
     <div
-      :class="['my-toast-view', 'my-toast-view-' + position]"
+      :class="[
+        'my-toast-view',
+        'my-toast-view-' + position,
+        { 'my-toast-have-icon': realIcon },
+      ]"
       @click="closeOnClick && input(false)"
     >
       <my-icon
         v-if="realIcon"
         :name="realIcon"
         :class-prefix="iconPrefix"
+        size="3rem"
       ></my-icon>
       <div
         v-if="type === 'html'"
@@ -137,68 +145,14 @@ export default class MyToast extends Vue {
    */
   @Prop({ default: "my-fade" })
   transition!: string;
-}
-interface ToastOption {
   /**
-   * 提示类型，可选值为 loading success fail html
+   * 隐藏任务
    */
-  type?: string;
+  clear!: Function;
   /**
-   * 位置，可选值为 top bottom
+   * 定时器
    */
-  position?: string;
-  /**
-   * 文本内容，支持通过\n换行
-   */
-  message?: string;
-  /**
-   * 自定义图标，支持传入图标名称或图片链接
-   */
-  icon?: string;
-  /**
-   * 图标类名前缀，同 Icon 组件的 class-prefix 属性
-   */
-  iconPrefix?: string;
-  /**
-   * 是否显示背景遮罩层
-   */
-  overlay?: boolean;
-  /**
-   * 是否禁止背景点击
-   */
-  forbidClick?: boolean;
-  /**
-   * 是否在点击后关闭
-   */
-  closeOnClick?: boolean;
-  /**
-   * 是否在点击遮罩层后关闭
-   */
-  closeOnClickOverlay?: boolean;
-  /**
-   * 加载图标类型, 可选值为 spinner
-   */
-  loadingType?: string;
-  /**
-   * 展示时长(ms)，值为 0 时，toast 不会消失
-   */
-  duration?: number;
-  /**
-   * 自定义类名
-   */
-  className?: string;
-  /**
-   * 完全展示后的回调函数
-   */
-  onOpened?: Function;
-  /**
-   * 关闭时的回调函数
-   */
-  onClose?: Function;
-  /**-
-   * 动画类名，等价于 transition 的name属性
-   */
-  transition?: string;
+  timer!: number;
 }
 </script>
 
@@ -221,11 +175,16 @@ interface ToastOption {
 }
 .my-toast-view {
   position: relative;
+  pointer-events: auto;
   display: inline-block;
   background-color: rgba(0, 0, 0, 0.7);
   border-radius: 0.5rem;
   width: fit-content;
   transform: translateY(-50%);
+  padding: 0.5rem 2rem;
+}
+.my-toast-have-icon {
+  padding: 1.569rem 2rem;
 }
 .my-toast-view-top {
   top: 20%;
@@ -234,10 +193,9 @@ interface ToastOption {
   top: 50%;
 }
 .my-toast-view-bottom {
-  bottom: 20%;
+  top: 80%;
 }
 .my-toast-message {
-  padding: 0.5rem 2rem;
   font-size: 0.8rem;
 }
 </style>
